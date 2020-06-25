@@ -6,6 +6,8 @@
 
 #include "important-numbers.h"
              
+#define DEBUG
+
 void updateMeasuredValues();
 void formatAndSendPIDOutputs();
 uint8_t homeModules();
@@ -35,10 +37,8 @@ void setup() {
 //  mod3_speedctl.SetSampleTime(0.001);
 //  mod3_anglectl.SetSampleTime(0.001);
 
-mod1_speedctl.SetOutputLimits(-20, 20);
-  mod1_anglectl.SetOutputLimits(-20, 20);
-//  mod1_speedctl.SetOutputLimits(-127, 127);
-//  mod1_anglectl.SetOutputLimits(-127, 127);
+   mod1_speedctl.SetOutputLimits(-127, 127);
+   mod1_anglectl.SetOutputLimits(-127, 127);
 //  mod2_speedctl.SetOutputLimits(-127, 127);
 //  mod2_anglectl.SetOutputLimits(-127, 127);
 //  mod3_speedctl.SetOutputLimits(-127, 127);
@@ -77,7 +77,6 @@ void loop() {
     mod1_targetangle = DEG_TO_RAD * b.substring(5,8).toFloat();
   }
 
-
   if(micros() - lastPIDcalc > 1000) {     //this syntax still works through a timer overflow
     updateMeasuredValues();
     
@@ -103,7 +102,7 @@ void updateMeasuredValues() {
 //          mod2_m2_ticks = mod2_m2_encoder.read(),
 //          mod3_m1_ticks = mod3_m1_encoder.read(),
 //          mod3_m2_ticks = mod3_m2_encoder.read();
-  static int32_t last_mod1_dist = 0;
+  static float last_mod1_dist = 0;
 //                 last_mod2_dist = 0,
 //                 last_mod3_dist = 0;
 
@@ -114,6 +113,7 @@ void updateMeasuredValues() {
 
   float mod1_dist = (WHEEL_CIRCUMFERENCE_IN * (mod1_m1_ticks - mod1_m2_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * WHEEL_RATIO); 
   mod1_measuredspeed = (1e6 * (mod1_dist - last_mod1_dist)) / deltaT;
+  Serial.println(mod1_dist - last_mod1_dist);
 
   mod1_measuredangle = (PI *(mod1_m1_ticks + mod1_m2_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);   //the 2 from the radian conversion and the average calculation cancel out
 
@@ -140,10 +140,12 @@ void formatAndSendPIDOutputs() {
       m2_out = (127 * m2_out) / abs(m2_out);
     }
   }
+  #ifdef DEBUG
   if(i2c_bus_error) {
-    Serial.println("error");
+    Serial.print("I2C error type ");
     Serial.println(Wire.getError());
   }
+  #endif
   updateModuleController1((int8_t)m1_out, (int8_t)m2_out);
 }
 
@@ -208,7 +210,6 @@ void updateModuleController1(int8_t m1, int8_t m2) {
     Wire.write(m1);
     Wire.write(m2);
     Wire.sendTransmission();
-    if(Wire.getError()) i2c_bus_error = true;
   } 
   else {
     module1_datawaiting = true;
@@ -224,7 +225,6 @@ void updateModuleController1(int8_t m1, int8_t m2) {
 //    Wire.write(m1);
 //    Wire.write(m2);
 //    Wire.sendTransmission();
-//    if(Wire.getError()) i2c_bus_error = true;
 //  } 
 //  else {
 //    module2_datawaiting = true;
@@ -240,14 +240,13 @@ void updateModuleController1(int8_t m1, int8_t m2) {
 //    Wire.write(m1);
 //    Wire.write(m2);
 //    Wire.sendTransmission();
-//    if(Wire.getError()) i2c_bus_error = true;
 //  } 
 //  else {
 //    module3_datawaiting = true;
 //    mod3_m1_buffervalue = m1;
 //    mod3_m2_buffervalue = m2;
 //  }
-//}
+// }
 
 void i2cTransmitCallback() {
   if(Wire.getError()) {

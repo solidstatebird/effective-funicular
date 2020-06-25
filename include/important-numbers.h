@@ -19,11 +19,11 @@ const float STEERING_RATIO = 50.0 * 47.0 * 97.0 / 25.0 / 25.0 / 25.0,
 
 const float WHEEL_CIRCUMFERENCE_IN = PI * 2.5;
 
-const float SPEED_KP = 10.0,
-            SPEED_KI = 0.1,
+const float SPEED_KP = 2.0,
+            SPEED_KI = 0.0,
             SPEED_KD = 0.0,
-            ANGLE_KP = 10.0,
-            ANGLE_KI = 0.1,
+            ANGLE_KP = 0.0,
+            ANGLE_KI = 0.0,
             ANGLE_KD = 0.0;
 
 #define CONTROLLER_I2C_PINS I2C_PINS_18_19      //must be a valid macro from the i2c_t3 library
@@ -67,8 +67,8 @@ int8_t mod1_m1_buffervalue = 0, mod1_m2_buffervalue = 0,
 
 
 
-FastFloatPID mod1_speedctl(&mod1_measuredspeed, &mod1_PIDspeed, &mod1_targetspeed, SPEED_KP, SPEED_KI, SPEED_KD, DIRECT),
-             mod1_anglectl(&mod1_measuredangle, &mod1_PIDangle, &mod1_targetangle, ANGLE_KP, ANGLE_KI, ANGLE_KD, DIRECT);
+FastFloatPID mod1_speedctl(&mod1_measuredspeed, &mod1_PIDspeed, &mod1_targetspeed, SPEED_KP, SPEED_KI, SPEED_KD, REVERSE),
+             mod1_anglectl(&mod1_measuredangle, &mod1_PIDangle, &mod1_targetangle, ANGLE_KP, ANGLE_KI, ANGLE_KD, REVERSE);
 //             mod2_speedctl(&mod2_measuredspeed, &mod2_PIDspeed, &mod2_targetspeed, SPEED_KP, SPEED_KI, SPEED_KD, DIRECT),
 //             mod2_anglectl(&mod2_measuredangle, &mod2_PIDangle, &mod2_targetangle, ANGLE_KP, ANGLE_KI, ANGLE_KD, DIRECT),
 //             mod3_speedctl(&mod2_measuredspeed, &mod3_PIDspeed, &mod3_targetspeed, SPEED_KP, SPEED_KI, SPEED_KD, DIRECT),
