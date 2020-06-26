@@ -52,8 +52,6 @@ float mod1_PIDspeed = 0, mod1_PIDangle = 0,
 
 
 
-
-
 boolean i2c_bus_error = false;
 
 boolean module1_datawaiting = false,

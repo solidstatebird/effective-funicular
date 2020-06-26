@@ -60,16 +60,30 @@ void loop() {
 //    updateModuleController1(b.substring(0,3).toInt(), b.substring(4,7).toInt());
 //  }
 
-//updateModuleController1(20, 20);
-//delay(1200);
-//updateModuleController1(0, 0);
-//delay(1200);
-//updateModuleController1(-20, -20);
-//delay(1200);
-//updateModuleController1(0, 0);
-//delay(1200);
+// updateModuleController1(20, 20);
+// delay(1200);
+// updateModuleController1(0, 0);
+// delay(1200);
+// updateModuleController1(-20, -20);
+// delay(1200);
+// updateModuleController1(0, 0);
+// delay(1200);
+
+// for (int i = 0; i <130; i++) {
+// updateModuleController1(20, 20);
+// delay(10);
+// }
+// updateModuleController1(0, 0);
+// delay(1200);
+// for (int i = 0; i <130; i++) {
+// updateModuleController1(-20, -20);
+// delay(10);
+// }
+// updateModuleController1(0, 0);
+// delay(1200);
 
   static unsigned long lastPIDcalc = 0;
+  
   if(Serial.available() > 6) {
     String b = Serial.readStringUntil('\n');
     
@@ -95,32 +109,43 @@ void loop() {
 
 
 void updateMeasuredValues() {
-  static unsigned long lastCalcTime = micros();
   int32_t mod1_m1_ticks = mod1_m1_encoder.read(),
           mod1_m2_ticks = mod1_m2_encoder.read();
-//          mod2_m1_ticks = mod2_m1_encoder.read(),
-//          mod2_m2_ticks = mod2_m2_encoder.read(),
-//          mod3_m1_ticks = mod3_m1_encoder.read(),
-//          mod3_m2_ticks = mod3_m2_encoder.read();
-  static float last_mod1_dist = 0;
-//                 last_mod2_dist = 0,
-//                 last_mod3_dist = 0;
 
-                 
-  if(lastCalcTime > micros()) lastCalcTime = 0;   //overflow mitigation
-  float deltaT = micros() - lastCalcTime;
-  if(deltaT < 250) deltaT = 1000;
+  static int32_t last_mod1_m1_ticks = mod1_m1_encoder.read(),
+                 last_mod1_m2_ticks = mod1_m1_encoder.read();
 
-  float mod1_dist = (WHEEL_CIRCUMFERENCE_IN * (mod1_m1_ticks - mod1_m2_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * WHEEL_RATIO); 
-  mod1_measuredspeed = (1e6 * (mod1_dist - last_mod1_dist)) / deltaT;
-  Serial.println(mod1_dist - last_mod1_dist);
+  static unsigned long last_mod1_m1_calctime = micros(),
+                       last_mod1_m2_calctime = micros();
+
+  static float mod1_m1_speed = 0,    //rpm
+               mod1_m2_speed = 0;
+
+  unsigned long now = micros();
+  if(last_mod1_m1_calctime > now) last_mod1_m1_calctime = 0;   //overflow mitigation
+  if(last_mod1_m2_calctime > now) last_mod1_m2_calctime = 0;
+
+  if(mod1_m1_ticks != last_mod1_m1_ticks) {
+    mod1_m1_speed = (1e6 * (mod1_m1_ticks - last_mod1_m1_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * (now - last_mod1_m1_calctime));
+     
+    last_mod1_m1_ticks = mod1_m1_ticks;
+    last_mod1_m1_calctime = now;
+  }
+
+  if(mod1_m2_ticks != last_mod1_m2_ticks) {
+    mod1_m2_speed = (1e6 * (mod1_m2_ticks - last_mod1_m2_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * (now - last_mod1_m2_calctime));
+    
+    last_mod1_m2_ticks = mod1_m2_ticks;
+    last_mod1_m2_calctime = now;
+  }
+
+  if(now - last_mod1_m1_calctime > 500000) mod1_m1_speed = 0;
+  if(now - last_mod1_m2_calctime > 500000) mod1_m2_speed = 0;
+
+  mod1_measuredspeed = (WHEEL_CIRCUMFERENCE_IN * (mod1_m1_speed - mod1_m2_speed)) / WHEEL_RATIO;
 
   mod1_measuredangle = (PI *(mod1_m1_ticks + mod1_m2_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);   //the 2 from the radian conversion and the average calculation cancel out
 
-  
-  //save encoder values for next calculation
-  lastCalcTime = micros();
-  last_mod1_dist = mod1_dist;
 }
 
 void formatAndSendPIDOutputs() {
@@ -205,6 +230,7 @@ void formatAndSendPIDOutputs() {
 
 
 void updateModuleController1(int8_t m1, int8_t m2) {
+  Serial.print(m1); Serial.print(","); Serial.println(m2);
   if(Wire.done()) {
     Wire.beginTransmission(MODULE1_ADDRESS);
     Wire.write(m1);
