@@ -28,9 +28,9 @@ const float SPEED_KP = 1.0,
 
 #define CONTROLLER_I2C_PINS I2C_PINS_18_19      //must be a valid macro from the i2c_t3 library
 
-Encoder mod1_m1_encoder(0,1),   mod1_m2_encoder(3,4);
-//        mod2_m1_encoder(6,7),   mod2_m2_encoder(8,9),
-//        mod3_m1_encoder(10,11), mod3_m2_encoder(12,13);
+Encoder mod1_m1_encoder(0,1), mod1_m2_encoder(3,4);
+//      mod2_m1_encoder(6,7), mod2_m2_encoder(8,9),
+//      mod3_m1_encoder(10,11), mod3_m2_encoder(12,13);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,9 +67,9 @@ int8_t mod1_m1_buffervalue = 0, mod1_m2_buffervalue = 0,
 
 FastFloatPID mod1_speedctl(&mod1_measuredspeed, &mod1_PIDspeed, &mod1_targetspeed, SPEED_KP, SPEED_KI, SPEED_KD, REVERSE),
              mod1_anglectl(&mod1_measuredangle, &mod1_PIDangle, &mod1_targetangle, ANGLE_KP, ANGLE_KI, ANGLE_KD, REVERSE);
-//             mod2_speedctl(&mod2_measuredspeed, &mod2_PIDspeed, &mod2_targetspeed, SPEED_KP, SPEED_KI, SPEED_KD, DIRECT),
-//             mod2_anglectl(&mod2_measuredangle, &mod2_PIDangle, &mod2_targetangle, ANGLE_KP, ANGLE_KI, ANGLE_KD, DIRECT),
-//             mod3_speedctl(&mod2_measuredspeed, &mod3_PIDspeed, &mod3_targetspeed, SPEED_KP, SPEED_KI, SPEED_KD, DIRECT),
-//             mod3_anglectl(&mod2_measuredangle, &mod3_PIDangle, &mod3_targetangle, ANGLE_KP, ANGLE_KI, ANGLE_KD, DIRECT);
+//           mod2_speedctl(&mod2_measuredspeed, &mod2_PIDspeed, &mod2_targetspeed, SPEED_KP, SPEED_KI, SPEED_KD, DIRECT),
+//           mod2_anglectl(&mod2_measuredangle, &mod2_PIDangle, &mod2_targetangle, ANGLE_KP, ANGLE_KI, ANGLE_KD, DIRECT),
+//           mod3_speedctl(&mod2_measuredspeed, &mod3_PIDspeed, &mod3_targetspeed, SPEED_KP, SPEED_KI, SPEED_KD, DIRECT),
+//           mod3_anglectl(&mod2_measuredangle, &mod3_PIDangle, &mod3_targetangle, ANGLE_KP, ANGLE_KI, ANGLE_KD, DIRECT);
 
 #endif
