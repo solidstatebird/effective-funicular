@@ -5,6 +5,7 @@
 #include <FastFloatPID.h>     //https://github.com/macaba/FastFloatPID
 
 #include "important-numbers.h"
+#include "util.h"
                          
 #define DEBUG
 
@@ -110,43 +111,43 @@ void loop() {
 
 void updateMeasuredValues() {
     int32_t mod1_m1_ticks = mod1_m1_encoder.read(),
-                    mod1_m2_ticks = mod1_m2_encoder.read();
+            mod1_m2_ticks = mod1_m2_encoder.read();
 
     static int32_t last_mod1_m1_ticks = mod1_m1_encoder.read(),
-                                 last_mod1_m2_ticks = mod1_m1_encoder.read();
+                   last_mod1_m2_ticks = mod1_m1_encoder.read();
 
     static unsigned long last_mod1_m1_calctime = micros(),
-                                             last_mod1_m2_calctime = micros();
+                         last_mod1_m2_calctime = micros();
 
-    static float mod1_m1_speed = 0,        //rpm
-                             mod1_m2_speed = 0;
+    static MovingAverage mod1_m1_average, mod1_m2_average;
 
     unsigned long now = micros();
+
     if(last_mod1_m1_calctime > now) last_mod1_m1_calctime = 0;     //overflow mitigation
     if(last_mod1_m2_calctime > now) last_mod1_m2_calctime = 0;
 
     if(mod1_m1_ticks != last_mod1_m1_ticks) {
-        mod1_m1_speed = (1e6 * (mod1_m1_ticks - last_mod1_m1_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * (now - last_mod1_m1_calctime));
-         
+        mod1_m1_average.add((1e6 * (mod1_m1_ticks - last_mod1_m1_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * (now - last_mod1_m1_calctime)));
+
         last_mod1_m1_ticks = mod1_m1_ticks;
         last_mod1_m1_calctime = now;
     }
 
     if(mod1_m2_ticks != last_mod1_m2_ticks) {
-        mod1_m2_speed = (1e6 * (mod1_m2_ticks - last_mod1_m2_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * (now - last_mod1_m2_calctime));
+         mod1_m2_average.add((1e6 * (mod1_m2_ticks - last_mod1_m2_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * (now - last_mod1_m2_calctime)));
         
         last_mod1_m2_ticks = mod1_m2_ticks;
         last_mod1_m2_calctime = now;
     }
 
-    if(now - last_mod1_m1_calctime > 500000) mod1_m1_speed = 0;
-    if(now - last_mod1_m2_calctime > 500000) mod1_m2_speed = 0;
+    if(now - last_mod1_m1_calctime > 500000) mod1_m1_average.zero();
+    if(now - last_mod1_m2_calctime > 500000) mod1_m2_average.zero();
 
-    mod1_measuredspeed = (WHEEL_CIRCUMFERENCE_IN * (mod1_m1_speed - mod1_m2_speed)) / WHEEL_RATIO;
+    mod1_measuredspeed = (WHEEL_CIRCUMFERENCE_IN * (mod1_m1_average.average() - mod1_m2_average.average())) / WHEEL_RATIO;
 
     mod1_measuredangle = (PI *(mod1_m1_ticks + mod1_m2_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);     //the 2 from the radian conversion and the average calculation cancel out
 
-    Serial.print(mod1_m1_speed);Serial.print(',');Serial.print(mod1_m2_speed);Serial.print(',');Serial.println(mod1_measuredspeed);
+    Serial.print(mod1_m1_average.average());Serial.print(',');Serial.print(mod1_m2_average.average());Serial.print(',');Serial.println(mod1_measuredspeed);
 }
 
 void formatAndSendPIDOutputs() {
