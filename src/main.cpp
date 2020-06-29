@@ -30,8 +30,8 @@ void setup() {
 
   //homeModules(); //check return value?
 
-  mod1_speedctl.SetSampleTime(0.001);
-  mod1_anglectl.SetSampleTime(0.001);
+  mod1_speedctl.SetSampleTime(0.002);
+  mod1_anglectl.SetSampleTime(0.002);
 //  mod2_speedctl.SetSampleTime(0.001);
 //  mod2_anglectl.SetSampleTime(0.001);
 //  mod3_speedctl.SetSampleTime(0.001);
@@ -91,7 +91,7 @@ void loop() {
     mod1_targetangle = DEG_TO_RAD * b.substring(5,8).toFloat();
   }
 
-  if(micros() - lastPIDcalc > 1000) {     //this syntax still works through a timer overflow
+  if(micros() - lastPIDcalc > 2000) {     //this syntax still works through a timer overflow
     updateMeasuredValues();
     
     mod1_speedctl.Compute();
@@ -146,6 +146,7 @@ void updateMeasuredValues() {
 
   mod1_measuredangle = (PI *(mod1_m1_ticks + mod1_m2_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);   //the 2 from the radian conversion and the average calculation cancel out
 
+  Serial.print(mod1_m1_speed);Serial.print(',');Serial.print(mod1_m2_speed);Serial.print(',');Serial.println(mod1_measuredspeed);
 }
 
 void formatAndSendPIDOutputs() {
@@ -230,7 +231,6 @@ void formatAndSendPIDOutputs() {
 
 
 void updateModuleController1(int8_t m1, int8_t m2) {
-  Serial.print(m1); Serial.print(","); Serial.println(m2);
   if(Wire.done()) {
     Wire.beginTransmission(MODULE1_ADDRESS);
     Wire.write(m1);
