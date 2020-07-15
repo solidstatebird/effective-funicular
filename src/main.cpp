@@ -1,6 +1,5 @@
 #include <Arduino.h>
 
-#include <i2c_t3.h>
 #include <Encoder.h>
 #include <FastFloatPID.h>     //https://github.com/macaba/FastFloatPID
 
@@ -10,42 +9,48 @@
 void updateMeasuredValues();
 void formatAndSendPIDOutputs();
 uint8_t homeModules();
-void updateModuleController1(int8_t, int8_t);
-void updateModuleController2(int8_t, int8_t);
-void updateModuleController3(int8_t, int8_t);
-void i2cTransmitCallback();
 
 
 void setup() {
     Serial.begin(2000000);
     Serial.setTimeout(10000);
-    
-    Wire.begin(I2C_MASTER, 0x00, CONTROLLER_I2C_PINS, I2C_PULLUP_EXT, 100000);
-    Wire.setDefaultTimeout(2000); // 2ms
-    Wire.onTransmitDone(&i2cTransmitCallback);
+
+    //pin setup
+    {
+        pinMode(MOD1_M1_DIRPIN, OUTPUT); pinMode(MOD1_M2_DIRPIN, OUTPUT);
+        pinMode(MOD2_M1_DIRPIN, OUTPUT); pinMode(MOD2_M2_DIRPIN, OUTPUT);
+        pinMode(MOD3_M1_DIRPIN, OUTPUT); pinMode(MOD3_M2_DIRPIN, OUTPUT);
+        analogWriteFrequency(MOD1_M1_DIRPIN, 15000); analogWriteFrequency(MOD1_M2_DIRPIN, 15000);
+        analogWriteFrequency(MOD2_M1_DIRPIN, 15000); analogWriteFrequency(MOD2_M2_DIRPIN, 15000);
+        analogWriteFrequency(MOD3_M1_DIRPIN, 15000); analogWriteFrequency(MOD3_M2_DIRPIN, 15000);
+    }
 
     //homeModules(); //check return value?
 
-    mod1_speedctl.SetSampleTime(0.002);
-    mod1_anglectl.SetSampleTime(0.002);
-//    mod2_speedctl.SetSampleTime(0.002);
-//    mod2_anglectl.SetSampleTime(0.002);
-//    mod3_speedctl.SetSampleTime(0.002);
-//    mod3_anglectl.SetSampleTime(0.002);
+    //PID setup
+    {
+        mod1_speedctl.SetSampleTime(0.002);
+        mod1_anglectl.SetSampleTime(0.002);
+    //    mod2_speedctl.SetSampleTime(0.002);
+    //    mod2_anglectl.SetSampleTime(0.002);
+    //    mod3_speedctl.SetSampleTime(0.002);
+    //    mod3_anglectl.SetSampleTime(0.002);
 
-     mod1_speedctl.SetOutputLimits(-127, 127);
-     mod1_anglectl.SetOutputLimits(-127, 127);
-//    mod2_speedctl.SetOutputLimits(-127, 127);
-//    mod2_anglectl.SetOutputLimits(-127, 127);
-//    mod3_speedctl.SetOutputLimits(-127, 127);
-//    mod3_anglectl.SetOutputLimits(-127, 127);
-    
-//    mod1_speedctl.SetMode(AUTOMATIC);
-    mod1_anglectl.SetMode(AUTOMATIC);
-//    mod2_speedctl.SetMode(AUTOMATIC);
-//    mod2_anglectl.SetMode(AUTOMATIC);
-//    mod3_speedctl.SetMode(AUTOMATIC);
-//    mod3_anglectl.SetMode(AUTOMATIC);
+        mod1_speedctl.SetOutputLimits(-255, 255);
+        mod1_anglectl.SetOutputLimits(-255, 255);
+    //    mod2_speedctl.SetOutputLimits(-255, 255);
+    //    mod2_anglectl.SetOutputLimits(-255, 255);
+    //    mod3_speedctl.SetOutputLimits(-255, 255);
+    //    mod3_anglectl.SetOutputLimits(-255, 255);
+        
+    //    mod1_speedctl.SetMode(AUTOMATIC);
+        mod1_anglectl.SetMode(AUTOMATIC);
+    //    mod2_speedctl.SetMode(AUTOMATIC);
+    //    mod2_anglectl.SetMode(AUTOMATIC);
+    //    mod3_speedctl.SetMode(AUTOMATIC);
+    //    mod3_anglectl.SetMode(AUTOMATIC);
+    }
+      
 }
 
 void loop() {
@@ -77,7 +82,7 @@ void loop() {
     if(micros() - lastPIDcalc > 2000) {         //this syntax still works through a timer overflow
         updateMeasuredValues();
         
-        mod1_speedctl.Compute();
+        // mod1_speedctl.Compute();
         mod1_anglectl.Compute();
         // mod2_speedctl.Compute();
         // mod2_anglectl.Compute();
@@ -95,30 +100,46 @@ void updateMeasuredValues() {
     int32_t mod1_m1_ticks = mod1_m1_encoder.read(),
             mod1_m2_ticks = mod1_m2_encoder.read();
 
-    //mod1_measuredspeed = (WHEEL_CIRCUMFERENCE_IN * (mod1_m1_average.average() - mod1_m2_average.average())) / WHEEL_RATIO;
-
     mod1_measuredangle = (PI *(mod1_m1_ticks + mod1_m2_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);     //the 2 from the radian conversion and the average calculation cancel out
 }
 
 void formatAndSendPIDOutputs() {
-    int m1_out = (127 * mod1_targetspeed / 327);
-    int m2_out = -(127 * mod1_targetspeed / 327);
-    m1_out += mod1_PIDangle;
-    m2_out += mod1_PIDangle;
+    //module 1
+    {
+        int m1_out = (127 * mod1_targetspeed / 327);
+        int m2_out = -(127 * mod1_targetspeed / 327);
+        m1_out += mod1_PIDangle;
+        m2_out += mod1_PIDangle;
 
-    //normalize
-    if(abs(m1_out) > 127 || abs(m2_out) > 127) {
-        if(abs(m1_out) > abs(m2_out)) {
-            m2_out = (127 * m2_out) / abs(m1_out); 
-            m1_out = (127 * m1_out) / abs(m1_out);
+        //normalize
+        if(abs(m1_out) > 255 || abs(m2_out) > 255) {
+            if(abs(m1_out) > abs(m2_out)) {
+                m2_out = (255 * m2_out) / abs(m1_out); 
+                m1_out = (255 * m1_out) / abs(m1_out);
+            }
+            else {
+                m1_out = (255 * m1_out) / abs(m2_out); 
+                m2_out = (255 * m2_out) / abs(m2_out);
+            }
         }
+
+        if(m1_out >= 0) {
+            digitalWrite(MOD1_M1_DIRPIN, LOW);
+            analogWrite(MOD1_M1_PWMPIN, m1_out);
+        } 
         else {
-            m1_out = (127 * m1_out) / abs(m2_out); 
-            m2_out = (127 * m2_out) / abs(m2_out);
+            digitalWrite(MOD1_M1_DIRPIN, HIGH);
+            analogWrite(MOD1_M1_PWMPIN, abs(m1_out));
         }
+        if(m2_out >= 0) {
+            digitalWrite(MOD1_M2_DIRPIN, LOW);
+            analogWrite(MOD1_M2_PWMPIN, m2_out);
+        } 
+        else {
+            digitalWrite(MOD1_M2_DIRPIN, HIGH);
+            analogWrite(MOD1_M2_PWMPIN, abs(m2_out));
     }
-
-    updateModuleController1((int8_t)m1_out, (int8_t)m2_out);
+    }
 }
 
 //uint8_t homeModules() {
@@ -174,77 +195,3 @@ void formatAndSendPIDOutputs() {
 //    if(homingError) return 1;
 //    else return 0;
 //}
-
-
-void updateModuleController1(int8_t m1, int8_t m2) {
-    if(Wire.done()) {
-        Wire.beginTransmission(MODULE1_ADDRESS);
-        Wire.write(m1);
-        Wire.write(m2);
-        Wire.sendTransmission();
-    } 
-    else {
-        module1_datawaiting = true;
-        mod1_m1_buffervalue = m1;
-        mod1_m2_buffervalue = m2;
-    }
-}
-
-//
-//void updateModuleController2(int8_t m1, int8_t m2) {
-//    if(Wire.done()) {
-//        Wire.beginTransmission(MODULE2_ADDRESS);
-//        Wire.write(m1);
-//        Wire.write(m2);
-//        Wire.sendTransmission();
-//    } 
-//    else {
-//        module2_datawaiting = true;
-//        mod2_m1_buffervalue = m1;
-//        mod2_m2_buffervalue = m2;
-//    }
-//}
-//
-//
-//void updateModuleController3(int8_t m1, int8_t m2) {
-//    if(Wire.done()) {
-//        Wire.beginTransmission(MODULE3_ADDRESS);
-//        Wire.write(m1);
-//        Wire.write(m2);
-//        Wire.sendTransmission();
-//    } 
-//    else {
-//        module3_datawaiting = true;
-//        mod3_m1_buffervalue = m1;
-//        mod3_m2_buffervalue = m2;
-//    }
-// }
-
-void i2cTransmitCallback() {
-    if(Wire.getError()) {
-        Wire.resetBus();
-        i2c_bus_error = true;
-    }
-    
-    if(module1_datawaiting) {
-        Wire.beginTransmission(MODULE1_ADDRESS);
-        Wire.write(mod1_m1_buffervalue);
-        Wire.write(mod1_m2_buffervalue);
-        Wire.sendTransmission();
-        module1_datawaiting = false;
-    } 
-    else if(module2_datawaiting) {
-        Wire.beginTransmission(MODULE1_ADDRESS);
-        Wire.write(mod2_m1_buffervalue);
-        Wire.write(mod2_m2_buffervalue);
-        Wire.sendTransmission();
-        module2_datawaiting = false;
-    } 
-    else if(module3_datawaiting) {
-        Wire.beginTransmission(MODULE3_ADDRESS);
-        Wire.write(mod3_m1_buffervalue);
-        Wire.write(mod3_m2_buffervalue);
-        Wire.sendTransmission();
-        module3_datawaiting = false;
-    }
-}

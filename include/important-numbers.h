@@ -8,14 +8,17 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //SYSTEM CONFIGURATION
 
-const uint8_t MODULE1_ADDRESS = 0x20,
-              MODULE2_ADDRESS = 0x21,
-              MODULE3_ADDRESS = 0x22;
+const uint8_t MOD1_M1_DIRPIN = 24, MOD1_M1_PWMPIN = 2,
+              MOD1_M2_DIRPIN = 25, MOD1_M2_PWMPIN = 3,
+              MOD2_M1_DIRPIN = 26, MOD2_M1_PWMPIN = 4,
+              MOD2_M2_DIRPIN = 27, MOD2_M2_PWMPIN = 5,
+              MOD3_M1_DIRPIN = 28, MOD3_M1_PWMPIN = 6,
+              MOD3_M2_DIRPIN = 29, MOD3_M2_PWMPIN = 7;
 
 const float ENCODER_TICKS_PER_REVOLUTION = 28;
 
-const float STEERING_RATIO = 50.0 * 47.0 * 97.0 / 25.0 / 25.0 / 25.0,
-            WHEEL_RATIO = STEERING_RATIO * 15.0 / 59.0;
+const float STEERING_RATIO = (25.0/49.0) * (25.0/49.0) * (25.0/97.0),
+            WHEEL_RATIO = STEERING_RATIO * (59.0/15.0);
 
 const float WHEEL_CIRCUMFERENCE_IN = PI * 2.5;
 
@@ -26,9 +29,7 @@ const float SPEED_KP = 0.0,
             ANGLE_KI = 0.0,
             ANGLE_KD = 0.0;
 
-#define CONTROLLER_I2C_PINS I2C_PINS_18_19      //must be a valid macro from the i2c_t3 library
-
-Encoder mod1_m1_encoder(0,1), mod1_m2_encoder(3,4);
+Encoder mod1_m1_encoder(9,10), mod1_m2_encoder(11,12);
 //      mod2_m1_encoder(6,7), mod2_m2_encoder(8,9),
 //      mod3_m1_encoder(10,11), mod3_m2_encoder(12,13);
 
@@ -49,19 +50,6 @@ float mod1_targetspeed = 0, mod1_targetangle = 0,
 float mod1_PIDspeed = 0, mod1_PIDangle = 0, 
       mod2_PIDspeed = 0, mod2_PIDangle = 0, 
       mod3_PIDspeed = 0, mod3_PIDangle = 0;
-
-
-
-boolean i2c_bus_error = false;
-
-boolean module1_datawaiting = false,
-        module2_datawaiting = false,
-        module3_datawaiting = false;
-
-//I2C data buffers
-int8_t mod1_m1_buffervalue = 0, mod1_m2_buffervalue = 0,
-       mod2_m1_buffervalue = 0, mod2_m2_buffervalue = 0, 
-       mod3_m1_buffervalue = 0, mod3_m2_buffervalue = 0;
 
 
 
