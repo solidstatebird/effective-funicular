@@ -17,15 +17,15 @@ const uint8_t MOD1_M1_DIRPIN = 24, MOD1_M1_PWMPIN = 2,
 
 const float ENCODER_TICKS_PER_REVOLUTION = 28;
 
-const float STEERING_RATIO = (25.0/49.0) * (25.0/49.0) * (25.0/97.0),
-            WHEEL_RATIO = STEERING_RATIO * (59.0/15.0);
+const float STEERING_RATIO = (49.0/25.0) * (49.0/25.0) * (97.0/25.0),
+            WHEEL_RATIO = STEERING_RATIO * (15.0/59.0);
 
 const float WHEEL_CIRCUMFERENCE_IN = PI * 2.5;
 
 const float SPEED_KP = 0.0,
             SPEED_KI = 0.0,
             SPEED_KD = 0.0,
-            ANGLE_KP = 8.0,
+            ANGLE_KP = 5.0,
             ANGLE_KI = 0.0,
             ANGLE_KD = 0.0;
 

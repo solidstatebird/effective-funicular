@@ -4,7 +4,9 @@
 #include <FastFloatPID.h>     //https://github.com/macaba/FastFloatPID
 
 #include "important-numbers.h"
-#include "util.h"
+//#include "util.h"
+
+#define MAX_MOTOR_OUTPUT 255
 
 void updateMeasuredValues();
 void formatAndSendPIDOutputs();
@@ -36,12 +38,12 @@ void setup() {
     //    mod3_speedctl.SetSampleTime(0.002);
     //    mod3_anglectl.SetSampleTime(0.002);
 
-        mod1_speedctl.SetOutputLimits(-255, 255);
-        mod1_anglectl.SetOutputLimits(-255, 255);
-    //    mod2_speedctl.SetOutputLimits(-255, 255);
-    //    mod2_anglectl.SetOutputLimits(-255, 255);
-    //    mod3_speedctl.SetOutputLimits(-255, 255);
-    //    mod3_anglectl.SetOutputLimits(-255, 255);
+        mod1_speedctl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
+        mod1_anglectl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
+    //    mod2_speedctl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
+    //    mod2_anglectl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
+    //    mod3_speedctl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
+    //    mod3_anglectl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
         
     //    mod1_speedctl.SetMode(AUTOMATIC);
         mod1_anglectl.SetMode(AUTOMATIC);
@@ -91,6 +93,9 @@ void loop() {
 
         formatAndSendPIDOutputs();
         lastPIDcalc = micros();
+Serial.println(mod1_measuredangle);
+        // Serial.println(mod1_m1_encoder.read());
+        // Serial.println(mod1_m2_encoder.read());
     }
 }
 
@@ -100,26 +105,26 @@ void updateMeasuredValues() {
     int32_t mod1_m1_ticks = mod1_m1_encoder.read(),
             mod1_m2_ticks = mod1_m2_encoder.read();
 
-    mod1_measuredangle = (PI *(mod1_m1_ticks + mod1_m2_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);     //the 2 from the radian conversion and the average calculation cancel out
+    mod1_measuredangle = (PI * (mod1_m1_ticks + mod1_m2_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);     //the 2 from the radian conversion and the average calculation cancel out
 }
 
 void formatAndSendPIDOutputs() {
     //module 1
     {
-        int m1_out = (127 * mod1_targetspeed / 327);
-        int m2_out = -(127 * mod1_targetspeed / 327);
+        int m1_out = (MAX_MOTOR_OUTPUT * mod1_targetspeed / 327);
+        int m2_out = -(MAX_MOTOR_OUTPUT * mod1_targetspeed / 327);
         m1_out += mod1_PIDangle;
         m2_out += mod1_PIDangle;
 
         //normalize
-        if(abs(m1_out) > 255 || abs(m2_out) > 255) {
+        if(abs(m1_out) > MAX_MOTOR_OUTPUT || abs(m2_out) > MAX_MOTOR_OUTPUT) {
             if(abs(m1_out) > abs(m2_out)) {
-                m2_out = (255 * m2_out) / abs(m1_out); 
-                m1_out = (255 * m1_out) / abs(m1_out);
+                m2_out = (MAX_MOTOR_OUTPUT * m2_out) / abs(m1_out); 
+                m1_out = (MAX_MOTOR_OUTPUT * m1_out) / abs(m1_out);
             }
             else {
-                m1_out = (255 * m1_out) / abs(m2_out); 
-                m2_out = (255 * m2_out) / abs(m2_out);
+                m1_out = (MAX_MOTOR_OUTPUT * m1_out) / abs(m2_out); 
+                m2_out = (MAX_MOTOR_OUTPUT * m2_out) / abs(m2_out);
             }
         }
 
