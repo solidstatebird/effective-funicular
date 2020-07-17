@@ -63,23 +63,23 @@ void loop() {
 //        updateModuleController1(b.substring(0,3).toInt(), b.substring(4,7).toInt());
 //    }
 
-// updateModuleController1(20, 20);
-// delay(1200);
-// updateModuleController1(0, 0);
-// delay(1200);
-// updateModuleController1(-20, -20);
-// delay(1200);
-// updateModuleController1(0, 0);
-// delay(1200);
+    mod1_targetspeed = 60;
+    static unsigned long lastANGLECHANGE = 0;
+    if(millis() - lastANGLECHANGE > 700) {
+        // mod1_targetangle = 3.14 * sin(millis() * 0.00328);
+        // mod1_targetspeed = 60 * sin(HALF_PI/2 + millis() * 0.00328);
+        mod1_targetangle += (90.0 * DEG_TO_RAD);
+        lastANGLECHANGE = millis();
+    }
 
     static unsigned long lastPIDcalc = 0;
     
-    if(Serial.available() > 6) {
-        String b = Serial.readStringUntil('\n');
+    // if(Serial.available() > 6) {
+    //     String b = Serial.readStringUntil('\n');
         
-        mod1_targetspeed = b.substring(0,4).toFloat();
-        mod1_targetangle = DEG_TO_RAD * b.substring(5,8).toFloat();
-    }
+    //     mod1_targetspeed = b.substring(0,4).toFloat();
+    //     mod1_targetangle = DEG_TO_RAD * b.substring(5,8).toFloat();
+    // }
 
     if(micros() - lastPIDcalc > 2000) {         //this syntax still works through a timer overflow
         updateMeasuredValues();
@@ -93,7 +93,8 @@ void loop() {
 
         formatAndSendPIDOutputs();
         lastPIDcalc = micros();
-Serial.println(mod1_measuredangle);
+
+        Serial.println(mod1_measuredangle);
         // Serial.println(mod1_m1_encoder.read());
         // Serial.println(mod1_m2_encoder.read());
     }
@@ -127,6 +128,7 @@ void formatAndSendPIDOutputs() {
                 m2_out = (MAX_MOTOR_OUTPUT * m2_out) / abs(m2_out);
             }
         }
+
 
         if(m1_out >= 0) {
             digitalWrite(MOD1_M1_DIRPIN, LOW);

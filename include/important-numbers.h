@@ -25,7 +25,7 @@ const float WHEEL_CIRCUMFERENCE_IN = PI * 2.5;
 const float SPEED_KP = 0.0,
             SPEED_KI = 0.0,
             SPEED_KD = 0.0,
-            ANGLE_KP = 5.0,
+            ANGLE_KP = 110.0,
             ANGLE_KI = 0.0,
             ANGLE_KD = 0.0;
 
