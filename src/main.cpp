@@ -32,25 +32,26 @@ void setup() {
 
     //PID setup
     {
-        mod1_speedctl.SetSampleTime(PID_SAMPLE_TIME);
-        mod1_anglectl.SetSampleTime(PID_SAMPLE_TIME);
-        mod2_speedctl.SetSampleTime(PID_SAMPLE_TIME);
-        mod2_anglectl.SetSampleTime(PID_SAMPLE_TIME);
-        mod3_speedctl.SetSampleTime(PID_SAMPLE_TIME);
-        mod3_anglectl.SetSampleTime(PID_SAMPLE_TIME);
+        mod1_anglectl.SetSampleTime(ANGLE_PID_SAMPLE_TIME);
+        mod2_anglectl.SetSampleTime(ANGLE_PID_SAMPLE_TIME);
+        mod3_anglectl.SetSampleTime(ANGLE_PID_SAMPLE_TIME);
+
+        mod1_speedctl.SetSampleTime(SPEED_PID_SAMPLE_TIME);
+        mod2_speedctl.SetSampleTime(SPEED_PID_SAMPLE_TIME);
+        mod3_speedctl.SetSampleTime(SPEED_PID_SAMPLE_TIME);
 
         mod1_speedctl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
-        mod1_anglectl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
         mod2_speedctl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
-        mod2_anglectl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
         mod3_speedctl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
+        mod1_anglectl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
+        mod2_anglectl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
         mod3_anglectl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
         
     //    mod1_speedctl.SetMode(AUTOMATIC);
-        mod1_anglectl.SetMode(AUTOMATIC);
     //    mod2_speedctl.SetMode(AUTOMATIC);
+     //    mod3_speedctl.SetMode(AUTOMATIC);
+          mod1_anglectl.SetMode(AUTOMATIC);
     //    mod2_anglectl.SetMode(AUTOMATIC);
-    //    mod3_speedctl.SetMode(AUTOMATIC);
     //    mod3_anglectl.SetMode(AUTOMATIC);
     }
       
@@ -73,7 +74,6 @@ void loop() {
     //     lastANGLECHANGE = millis();
     // }
 
-    static unsigned long lastPIDcalc = 0;
     
     if(Serial.available() > 6) {
         String b = Serial.readStringUntil('\n');
@@ -82,40 +82,48 @@ void loop() {
         mod1_targetangle = DEG_TO_RAD * b.substring(5,8).toFloat();
     }
 
-    if(micros() - lastPIDcalc > 1e6 * PID_SAMPLE_TIME) {         //this syntax still works through a timer overflow
-        updateMeasuredValues();
+    static unsigned long lastAngleCalc = 0;
+    if(micros() - lastAngleCalc > 1e6 * ANGLE_PID_SAMPLE_TIME) {         //this syntax still works through a timer overflow
+        mod1_measuredangle = (PI * (mod1_m1_encoder.read() + mod1_m2_encoder.read())) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);    
+                                         //the 2 from the radian conversion and the averaging calculation cancel out
         
-        mod1_speedctl.Compute();
         mod1_anglectl.Compute();
-        mod2_speedctl.Compute();
         mod2_anglectl.Compute();
-        mod3_speedctl.Compute();
         mod3_anglectl.Compute();
 
         formatAndSendPIDOutputs();
-        lastPIDcalc = micros();
+
+        lastAngleCalc = micros();
 
         Serial.println(mod1_measuredangle);
         // Serial.println(mod1_m1_encoder.read());
         // Serial.println(mod1_m2_encoder.read());
     }
+    
+    static unsigned long lastSpeedCalc = 0;
+    if(micros() - lastSpeedCalc > 1e6 * SPEED_PID_SAMPLE_TIME) {         //this syntax still works through a timer overflow
+        static int32_t lastPosition = 0;
+        int32_t position = mod1_m1_encoder.read() - mod1_m2_encoder.read();
+        
+        mod1_measuredspeed = (position - lastPosition) / SPEED_PID_SAMPLE_TIME;
+        
+        mod1_speedctl.Compute();
+        mod2_speedctl.Compute();
+        mod3_speedctl.Compute();
+
+        formatAndSendPIDOutputs();
+
+        lastPosition = position;
+        lastSpeedCalc = micros();
+    }
 }
 
-
-
-void updateMeasuredValues() {
-    int32_t mod1_m1_ticks = mod1_m1_encoder.read(),
-            mod1_m2_ticks = mod1_m2_encoder.read();
-
-    mod1_measuredangle = (PI * (mod1_m1_ticks + mod1_m2_ticks)) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);    
-                                         //the 2 from the radian conversion and the averaging calculation cancel out
-}
 
 void formatAndSendPIDOutputs() {
     //module 1
     {
-        int m1_out = (MAX_MOTOR_OUTPUT * mod1_targetspeed / 327);
-        int m2_out = -(MAX_MOTOR_OUTPUT * mod1_targetspeed / 327);
+        int m1_out = mod1_PIDspeed;
+        int m2_out = mod1_PIDspeed;
         m1_out += mod1_PIDangle;
         m2_out += mod1_PIDangle;
 

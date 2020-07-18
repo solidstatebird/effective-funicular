@@ -8,7 +8,8 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //SYSTEM CONFIGURATION
 
-const float PID_SAMPLE_TIME = 0.002;
+const float ANGLE_PID_SAMPLE_TIME = 0.002;
+const float SPEED_PID_SAMPLE_TIME = 0.04;
 
 const float ENCODER_TICKS_PER_REVOLUTION = 28;
 
@@ -17,7 +18,7 @@ const float STEERING_RATIO = (49.0/25.0) * (49.0/25.0) * (97.0/25.0),
 
 const float WHEEL_CIRCUMFERENCE_IN = PI * 2.5;
 
-const float SPEED_KP = 0.0,
+const float SPEED_KP = 10.0,
             SPEED_KI = 0.0,
             SPEED_KD = 0.0,
             ANGLE_KP = 110.0,
