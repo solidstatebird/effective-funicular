@@ -111,7 +111,11 @@ void loop() {
         } else {
             mod1_speedctl.SetOutputLimits(-MAX_MOTOR_OUTPUT, 0);
         }
-        
+        //clear any I error accumulation when desired speed is zero
+        if(mod1_targetspeed == 0) {
+            mod1_speedctl.SetMode(MANUAL);
+            mod1_speedctl.SetMode(AUTOMATIC);
+        }
 
         mod1_speedctl.Compute();
         mod2_speedctl.Compute();
