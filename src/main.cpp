@@ -108,13 +108,10 @@ void loop() {
         //prevent the speed PID from sending an output in the wrong direction
         if(mod1_targetspeed >= 0) {
             mod1_speedctl.SetOutputLimits(0, MAX_MOTOR_OUTPUT);
-            mod2_speedctl.SetOutputLimits(0, MAX_MOTOR_OUTPUT);
-            mod3_speedctl.SetOutputLimits(0, MAX_MOTOR_OUTPUT);
         } else {
             mod1_speedctl.SetOutputLimits(-MAX_MOTOR_OUTPUT, 0);
-            mod2_speedctl.SetOutputLimits(-MAX_MOTOR_OUTPUT, 0);
-            mod3_speedctl.SetOutputLimits(-MAX_MOTOR_OUTPUT, 0);
         }
+        
 
         mod1_speedctl.Compute();
         mod2_speedctl.Compute();
