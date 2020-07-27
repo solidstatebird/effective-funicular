@@ -1,9 +1,6 @@
 #ifndef IMPORTANT_NUMBERS_H
 #define IMPORTANT_NUMBERS_H
 
-#include <Encoder.h>
-#include <FastFloatPID.h>
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //SYSTEM CONFIGURATION
@@ -25,6 +22,9 @@ const float SPEED_KP = 1.2,
             ANGLE_KI = 0.0,
             ANGLE_KD = 0.0;
 
+const int MAGNET_THRESHOLD = 80;
+//PINS
+
 Encoder mod1_m1_encoder(9,10), mod1_m2_encoder(11,12);
       //   mod2_m1_encoder(6,7), mod2_m2_encoder(8,9),
       //   mod3_m1_encoder(10,11), mod3_m2_encoder(12,13);
@@ -35,6 +35,10 @@ const uint8_t MOD1_M1_DIRPIN = 24, MOD1_M1_PWMPIN = 2,
               MOD2_M2_DIRPIN = 27, MOD2_M2_PWMPIN = 5,
               MOD3_M1_DIRPIN = 28, MOD3_M1_PWMPIN = 6,
               MOD3_M2_DIRPIN = 29, MOD3_M2_PWMPIN = 7;
+
+const uint8_t MOD1_HALLPIN = A9,
+              MOD2_HALLPIN = A10,
+              MOD3_HALLPIN = A11;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

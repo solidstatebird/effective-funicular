@@ -154,58 +154,62 @@ void formatAndSendPIDOutputs() {
 }
 
 uint8_t homeModules() {
-   unsigned long startTime = millis();
-   boolean homingError = false;
-   while(1) {
-       updateModuleController(40, 40, MODULE_1);
-       
-       if(analogRead(A9) < 80)  {
-           updateModuleController(0, 0, MODULE_1);
-           break;
-       }
-       if(millis() - startTime > 5000) {
-           updateModuleController(0, 0, MODULE_1);
-           homingError = true;
-           break;
-       }
-   }
+    unsigned long startTime = millis();
+    boolean homingError = false;
+    while(1) {
+        updateModuleController(40, 40, MODULE_1);
+        
+        if(analogRead(MOD3_HALLPIN) < MAGNET_THRESHOLD) {
+            updateModuleController(0, 0, MODULE_1);
+            break;
+        }
+        if(millis() - startTime > 5000) {
+            updateModuleController(0, 0, MODULE_1);
+            homingError = true;
+            break;
+        }
+    }
     mod1_m1_encoder.write(0);
     mod1_m2_encoder.write(0);
 
-//    startTime = millis();
-//    while(1) {
-//        updateModuleController2(5, 5);
-//        
-//        if(/*homing success*/0) {
-//            updateModuleController2(0, 0);
-//            mod2_m1_encoder.write(0);
-//            mod2_m2_encoder.write(0);
-//            break;
-//        }
-//        if(millis() - startTime > 5000) {
-//            updateModuleController2(0, 0);
-//            homingError = true;
-//            break;
-//        }
-//    }
-//    startTime = millis();
-//    while(1) {
-//        updateModuleController3(5, 5);
-//        
-//        if(/*homing success*/0) {
-//            updateModuleController3(0, 0);
-//            mod3_m1_encoder.write(0);
-//            mod3_m2_encoder.write(0);
-//            break;
-//        }
-//        if(millis() - startTime > 5000) {
-//            updateModuleController3(0, 0);
-//            homingError = true;
-//            break;
-//        }
-//    }
-   if(homingError) return 1;
-   else return 0;
+    // startTime = millis();
+
+    // while(1) {
+    //     updateModuleController(40, 40, MODULE_2);
+        
+    //     if(analogRead(MOD2_HALLPIN) < MAGNET_THRESHOLD)  {
+    //         updateModuleController(0, 0, MODULE_2);
+    //         break;
+    //     }
+    //     if(millis() - startTime > 5000) {
+    //         updateModuleController(0, 0, MODULE_2);
+    //         homingError = true;
+    //         break;
+    //     }
+    // }
+    // mod2_m1_encoder.write(0);
+    // mod2_m2_encoder.write(0);
+
+    // startTime = millis();
+
+    // while(1) {
+    //     updateModuleController(40, 40, MODULE_3);
+        
+    //     if(analogRead(MOD3_HALLPIN) < MAGNET_THRESHOLD)  {
+    //         updateModuleController(0, 0, MODULE_3);
+    //         break;
+    //     }
+    //     if(millis() - startTime > 5000) {
+    //         updateModuleController(0, 0, MODULE_3);
+    //         homingError = true;
+    //         break;
+    //     }
+    // }
+    // mod3_m1_encoder.write(0);
+    // mod3_m2_encoder.write(0);
+
+    if(homingError) return 1;
+    else return 0;
 }
 
 
