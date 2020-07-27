@@ -28,7 +28,7 @@ void setup() {
         analogWriteFrequency(MOD3_M1_DIRPIN, 15000); analogWriteFrequency(MOD3_M2_DIRPIN, 15000);
     }
 
-    //homeModules(); //check return value?
+   // homeModules(); //check return value?
 
     //PID setup
     {
@@ -60,12 +60,12 @@ void setup() {
 }
 
 void loop() {
-    // mod1_targetspeed = 60;
+    // mod1_targetspeed = 30;
     // static unsigned long lastANGLECHANGE = 0;
-    // if(millis() - lastANGLECHANGE > 700) {
+    // if(millis() - lastANGLECHANGE > 1000) {
     //     // mod1_targetangle = 3.14 * sin(millis() * 0.00328);
     //     // mod1_targetspeed = 60 * sin(HALF_PI/2 + millis() * 0.00328);
-    //     mod1_targetangle += (90.0 * DEG_TO_RAD);
+    //     mod1_targetangle += (6.0 * DEG_TO_RAD);
     //     lastANGLECHANGE = millis();
     // }
 
@@ -153,36 +153,37 @@ void formatAndSendPIDOutputs() {
     }
 }
 
-//uint8_t homeModules() {
-//    unsigned long startTime = millis();
-//    boolean homingError = false;
-//    while(1) {
-//        updateModuleController1(5, 5);
-//        
-//        if(/*homing success*/0) {
-//            for(byte i = 0; i < 10; i++) updateModuleController1(0, 0);
-//            mod1_m1_encoder.write(0);
-//            mod1_m2_encoder.write(0);
-//            break;
-//        }
-//        if(millis() - startTime > 5000) {
-//            for(byte i = 0; i < 10; i++) updateModuleController1(0, 0);
-//            homingError = true;
-//            break;
-//        }
-//    }
+uint8_t homeModules() {
+   unsigned long startTime = millis();
+   boolean homingError = false;
+   while(1) {
+       updateModuleController(40, 40, MODULE_1);
+       
+       if(analogRead(A9) < 80)  {
+           updateModuleController(0, 0, MODULE_1);
+           break;
+       }
+       if(millis() - startTime > 5000) {
+           updateModuleController(0, 0, MODULE_1);
+           homingError = true;
+           break;
+       }
+   }
+    mod1_m1_encoder.write(0);
+    mod1_m2_encoder.write(0);
+
 //    startTime = millis();
 //    while(1) {
 //        updateModuleController2(5, 5);
 //        
 //        if(/*homing success*/0) {
-//            for(byte i = 0; i < 10; i++) updateModuleController2(0, 0);
+//            updateModuleController2(0, 0);
 //            mod2_m1_encoder.write(0);
 //            mod2_m2_encoder.write(0);
 //            break;
 //        }
 //        if(millis() - startTime > 5000) {
-//            for(byte i = 0; i < 10; i++) updateModuleController2(0, 0);
+//            updateModuleController2(0, 0);
 //            homingError = true;
 //            break;
 //        }
@@ -192,20 +193,20 @@ void formatAndSendPIDOutputs() {
 //        updateModuleController3(5, 5);
 //        
 //        if(/*homing success*/0) {
-//            for(byte i = 0; i < 10; i++) updateModuleController3(0, 0);
+//            updateModuleController3(0, 0);
 //            mod3_m1_encoder.write(0);
 //            mod3_m2_encoder.write(0);
 //            break;
 //        }
 //        if(millis() - startTime > 5000) {
-//            for(byte i = 0; i < 10; i++) updateModuleController3(0, 0);
+//            updateModuleController3(0, 0);
 //            homingError = true;
 //            break;
 //        }
 //    }
-//    if(homingError) return 1;
-//    else return 0;
-//}
+   if(homingError) return 1;
+   else return 0;
+}
 
 
 void updateModuleController(int m1, int m2, uint8_t selector) {
