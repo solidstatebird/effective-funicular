@@ -8,9 +8,14 @@
 
 //#include "util.h"
 
+void updateDisarmTimer();
 void updateMeasuredValues();
-void updateModuleController(int, int, uint8_t);
+void updateAngle();
+void updateSpeed();
+void parsePacket();
 void formatAndSendPIDOutputs();
+
+void updateModuleController(int, int, uint8_t);
 uint8_t homeModules();
 
 
@@ -72,45 +77,20 @@ void loop() {
     //     lastANGLECHANGE = millis();
     // }
 
-       
 
-    static unsigned long lastAngleCalc = 0;
-    if(micros() - lastAngleCalc > 1e6 * ANGLE_PID_SAMPLE_TIME) {         //this syntax still works through a timer overflow
-        mod1_measuredangle = (PI * (mod1_m1_encoder.read() + mod1_m2_encoder.read()))
-                                / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);    
-                                         //the 2 from the radian conversion and the averaging calculation cancel out
-        
-        mod1_anglectl.Compute();
-        mod2_anglectl.Compute();
-        mod3_anglectl.Compute();
-
-        formatAndSendPIDOutputs();
-
-        lastAngleCalc = micros();
-    }
-    
-    static unsigned long lastSpeedCalc = 0;
-    if(micros() - lastSpeedCalc > 1e6 * SPEED_PID_SAMPLE_TIME) {         //this syntax still works through a timer overflow
-        static int32_t lastPosition = 0;
-        int32_t position = mod1_m1_encoder.read() - mod1_m2_encoder.read();
-        
-        mod1_measuredspeed = (WHEEL_CIRCUMFERENCE_IN * (position - lastPosition))
-                                / ( ENCODER_TICKS_PER_REVOLUTION * WHEEL_RATIO * SPEED_PID_SAMPLE_TIME);
- 
-        mod1_speedctl.Compute();
-        mod2_speedctl.Compute();
-        mod3_speedctl.Compute();
-
-        formatAndSendPIDOutputs();
-
-        lastPosition = position;
-        lastSpeedCalc = micros();
-    }
-
-    radioUpdate();
+    //radioUpdate();
 
     if(radioPacketAvailable()) {
-        Packet packet = radioGetPacket(); 
+        parsePacket();
+    }
+    #warning disarm timer diabled
+    //updateDisarmTimer();
+    updateSpeed();
+    updateAngle();
+}
+
+void parsePacket() {
+    Packet packet = radioGetPacket(); 
         if(GETFLAG(packet.flags, FLAG_ENABLE)) {
             if(!enabled) {
                 mod1_anglectl.SetMode(AUTOMATIC);
@@ -165,8 +145,46 @@ void loop() {
                 mod3_speedctl.SetMode(AUTOMATIC);
             } 
         }
-    }
+}
 
+void updateAngle() {
+    static unsigned long lastAngleCalc = micros();
+    if(micros() - lastAngleCalc > 1e6 * ANGLE_PID_SAMPLE_TIME) {         //this syntax still works through a timer overflow
+        mod1_measuredangle = (PI * (mod1_m1_encoder.read() + mod1_m2_encoder.read()))
+                                / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);    
+                                         //the 2 from the radian conversion and the averaging calculation cancel out
+        
+        mod1_anglectl.Compute();
+        mod2_anglectl.Compute();
+        mod3_anglectl.Compute();
+
+        formatAndSendPIDOutputs();
+
+        lastAngleCalc = micros();
+    }
+}
+
+void updateSpeed() {
+    static unsigned long lastSpeedCalc = micros();
+    if(micros() - lastSpeedCalc > 1e6 * SPEED_PID_SAMPLE_TIME) {         //this syntax still works through a timer overflow
+        static int32_t lastPosition = 0;
+        int32_t position = mod1_m1_encoder.read() - mod1_m2_encoder.read();
+        
+        mod1_measuredspeed = (WHEEL_CIRCUMFERENCE_IN * (position - lastPosition))
+                                / ( ENCODER_TICKS_PER_REVOLUTION * WHEEL_RATIO * SPEED_PID_SAMPLE_TIME);
+ 
+        mod1_speedctl.Compute();
+        mod2_speedctl.Compute();
+        mod3_speedctl.Compute();
+
+        formatAndSendPIDOutputs();
+
+        lastPosition = position;
+        lastSpeedCalc = micros();
+    }
+}
+
+void updateDisarmTimer() {
     static unsigned long disableTimer = millis();
     if(millis() - disableTimer > SAFETY_TIMEOUT_MS) {
         mod1_targetspeed = 0;
