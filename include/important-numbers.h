@@ -4,11 +4,16 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //SYSTEM CONFIGURATION
+//radio config is in radio.h
 
 const float ANGLE_PID_SAMPLE_TIME = 0.002;
 const float SPEED_PID_SAMPLE_TIME = 0.02;
 
+const int SAFETY_TIMEOUT_MS = 1000;
+
 const float ENCODER_TICKS_PER_REVOLUTION = 28;
+
+const int MAX_MOTOR_OUTPUT = 255;
 
 const float STEERING_RATIO = (49.0/25.0) * (49.0/25.0) * (97.0/25.0),
             WHEEL_RATIO = STEERING_RATIO * (15.0/59.0);
@@ -43,6 +48,8 @@ const uint8_t MOD1_HALLPIN = A9,
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+boolean enabled = false;
+
 //PID inputs
 float mod1_measuredspeed = 0, mod1_measuredangle = 0, 
       mod2_measuredspeed = 0, mod2_measuredangle = 0, 
@@ -58,15 +65,12 @@ float mod1_PIDspeed = 0, mod1_PIDangle = 0,
       mod2_PIDspeed = 0, mod2_PIDangle = 0, 
       mod3_PIDspeed = 0, mod3_PIDangle = 0;
 
-
-
 FastFloatPID mod1_speedctl(&mod1_measuredspeed, &mod1_PIDspeed, &mod1_targetspeed, SPEED_KP, SPEED_KI, SPEED_KD, DIRECT),
              mod1_anglectl(&mod1_measuredangle, &mod1_PIDangle, &mod1_targetangle, ANGLE_KP, ANGLE_KI, ANGLE_KD, REVERSE),
              mod2_speedctl(&mod2_measuredspeed, &mod2_PIDspeed, &mod2_targetspeed, SPEED_KP, SPEED_KI, SPEED_KD, REVERSE),
              mod2_anglectl(&mod2_measuredangle, &mod2_PIDangle, &mod2_targetangle, ANGLE_KP, ANGLE_KI, ANGLE_KD, REVERSE),
              mod3_speedctl(&mod2_measuredspeed, &mod3_PIDspeed, &mod3_targetspeed, SPEED_KP, SPEED_KI, SPEED_KD, REVERSE),
              mod3_anglectl(&mod2_measuredangle, &mod3_PIDangle, &mod3_targetangle, ANGLE_KP, ANGLE_KI, ANGLE_KD, REVERSE);
-
 
 #define MODULE_1 0
 #define MODULE_2 1

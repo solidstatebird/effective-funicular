@@ -3,10 +3,10 @@
 #include <Encoder.h>
 #include <FastFloatPID.h>     //https://github.com/macaba/FastFloatPID
 
+#include "radio.h"
 #include "important-numbers.h"
-//#include "util.h"
 
-#define MAX_MOTOR_OUTPUT 255
+//#include "util.h"
 
 void updateMeasuredValues();
 void updateModuleController(int, int, uint8_t);
@@ -18,6 +18,8 @@ void setup() {
     Serial.begin(2000000);
     Serial.setTimeout(10000);
 
+    radioInitialize();
+
     //pin setup
     {
         pinMode(MOD1_M1_DIRPIN, OUTPUT); pinMode(MOD1_M2_DIRPIN, OUTPUT);
@@ -28,7 +30,8 @@ void setup() {
         analogWriteFrequency(MOD3_M1_DIRPIN, 15000); analogWriteFrequency(MOD3_M2_DIRPIN, 15000);
     }
 
-   // homeModules(); //check return value?
+
+    //homeModules(); //check return value?
 
     //PID setup
     {
@@ -69,13 +72,7 @@ void loop() {
     //     lastANGLECHANGE = millis();
     // }
 
-    
-    if(Serial.available() > 6) {
-        String b = Serial.readStringUntil('\n');
-        
-        mod1_targetspeed = b.substring(0,4).toFloat();
-        mod1_targetangle = DEG_TO_RAD * b.substring(5,8).toFloat();
-    }
+       
 
     static unsigned long lastAngleCalc = 0;
     if(micros() - lastAngleCalc > 1e6 * ANGLE_PID_SAMPLE_TIME) {         //this syntax still works through a timer overflow
@@ -90,11 +87,6 @@ void loop() {
         formatAndSendPIDOutputs();
 
         lastAngleCalc = micros();
-
-        Serial.print(mod1_measuredspeed);Serial.print("     ");
-        Serial.println(mod1_PIDspeed);
-        // Serial.println(mod1_m1_encoder.read());
-        // Serial.println(mod1_m2_encoder.read());
     }
     
     static unsigned long lastSpeedCalc = 0;
@@ -104,19 +96,7 @@ void loop() {
         
         mod1_measuredspeed = (WHEEL_CIRCUMFERENCE_IN * (position - lastPosition))
                                 / ( ENCODER_TICKS_PER_REVOLUTION * WHEEL_RATIO * SPEED_PID_SAMPLE_TIME);
-        
-        //prevent the speed PID from sending an output in the wrong direction
-        if(mod1_targetspeed >= 0) {
-            mod1_speedctl.SetOutputLimits(0, MAX_MOTOR_OUTPUT);
-        } else {
-            mod1_speedctl.SetOutputLimits(-MAX_MOTOR_OUTPUT, 0);
-        }
-        //clear any I error accumulation when desired speed is zero
-        if(mod1_targetspeed == 0) {
-            mod1_speedctl.SetMode(MANUAL);
-            mod1_speedctl.SetMode(AUTOMATIC);
-        }
-
+ 
         mod1_speedctl.Compute();
         mod2_speedctl.Compute();
         mod3_speedctl.Compute();
@@ -125,6 +105,89 @@ void loop() {
 
         lastPosition = position;
         lastSpeedCalc = micros();
+    }
+
+    radioUpdate();
+
+    if(radioPacketAvailable()) {
+        Packet packet = radioGetPacket(); 
+        if(GETFLAG(packet.flags, FLAG_ENABLE)) {
+            if(!enabled) {
+                mod1_anglectl.SetMode(AUTOMATIC);
+                mod2_anglectl.SetMode(AUTOMATIC);
+                mod3_anglectl.SetMode(AUTOMATIC);
+                mod1_speedctl.SetMode(AUTOMATIC);
+                mod2_speedctl.SetMode(AUTOMATIC);
+                mod3_speedctl.SetMode(AUTOMATIC);
+                enabled = true;
+            }
+        }
+
+        if(GETFLAG(packet.flags, FLAG_ACK)) {
+            radioSendStatus();
+        }
+
+        if(enabled) {
+            mod1_targetspeed = packet.s1;
+            mod2_targetspeed = packet.s2;
+            mod3_targetspeed = packet.s3;
+            mod1_targetangle = packet.a1;
+            mod2_targetangle = packet.a2;
+            mod3_targetangle = packet.a3;
+            
+            //prevent the speed PID from sending an output in the wrong direction
+            if(mod1_targetspeed >= 0) {
+                mod1_speedctl.SetOutputLimits(0, MAX_MOTOR_OUTPUT);
+            } else {
+                mod1_speedctl.SetOutputLimits(-MAX_MOTOR_OUTPUT, 0);
+            }
+            //clear any I error accumulation when desired speed is zero
+            if(mod1_targetspeed == 0) {
+                mod1_speedctl.SetMode(MANUAL);
+                mod1_speedctl.SetMode(AUTOMATIC);
+            } 
+            if(mod2_targetspeed >= 0) {
+                mod2_speedctl.SetOutputLimits(0, MAX_MOTOR_OUTPUT);
+            } else {
+                mod2_speedctl.SetOutputLimits(-MAX_MOTOR_OUTPUT, 0);
+            }
+            if(mod2_targetspeed == 0) {
+                mod2_speedctl.SetMode(MANUAL);
+                mod2_speedctl.SetMode(AUTOMATIC);
+            } 
+            if(mod3_targetspeed >= 0) {
+                mod3_speedctl.SetOutputLimits(0, MAX_MOTOR_OUTPUT);
+            } else {
+                mod3_speedctl.SetOutputLimits(-MAX_MOTOR_OUTPUT, 0);
+            }
+            if(mod3_targetspeed == 0) {
+                mod3_speedctl.SetMode(MANUAL);
+                mod3_speedctl.SetMode(AUTOMATIC);
+            } 
+        }
+    }
+
+    static unsigned long disableTimer = millis();
+    if(millis() - disableTimer > SAFETY_TIMEOUT_MS) {
+        mod1_targetspeed = 0;
+        mod2_targetspeed = 0;
+        mod3_targetspeed = 0;
+        mod1_anglectl.SetMode(MANUAL);
+        mod2_anglectl.SetMode(MANUAL);
+        mod3_anglectl.SetMode(MANUAL);
+        mod1_speedctl.SetMode(MANUAL);
+        mod2_speedctl.SetMode(MANUAL);
+        mod3_speedctl.SetMode(MANUAL);
+        mod1_targetspeed = 0;
+        mod2_targetspeed = 0;
+        mod3_targetspeed = 0;
+        mod1_PIDspeed = 0;
+        mod2_PIDspeed = 0;
+        mod3_PIDspeed = 0;
+        mod1_PIDangle = 0;
+        mod2_PIDangle = 0;
+        mod3_PIDangle = 0;
+        enabled = false;
     }
 }
 
