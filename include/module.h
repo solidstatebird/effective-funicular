@@ -31,16 +31,16 @@ const int MAGNET_THRESHOLD = 80;
 
 //PINS
 
-const uint8_t MOD1_M1_DIRPIN = 24, MOD1_M1_PWMPIN = 2,
-              MOD1_M2_DIRPIN = 25, MOD1_M2_PWMPIN = 3,
-              MOD2_M1_DIRPIN = 26, MOD2_M1_PWMPIN = 4,
-              MOD2_M2_DIRPIN = 27, MOD2_M2_PWMPIN = 5,
-              MOD3_M1_DIRPIN = 28, MOD3_M1_PWMPIN = 6,
-              MOD3_M2_DIRPIN = 29, MOD3_M2_PWMPIN = 7;
+const uint8_t MOD1_M1_DIRPIN = 21, MOD1_M1_PWMPIN = 23,
+              MOD1_M2_DIRPIN = 20, MOD1_M2_PWMPIN = 22,
+              MOD2_M1_DIRPIN = 31, MOD2_M1_PWMPIN = 29,
+              MOD2_M2_DIRPIN = 32, MOD2_M2_PWMPIN = 30,
+              MOD3_M1_DIRPIN = 5, MOD3_M1_PWMPIN = 3,
+              MOD3_M2_DIRPIN = 6, MOD3_M2_PWMPIN = 4;
 
-const uint8_t MOD1_HALLPIN = A9,
-              MOD2_HALLPIN = A10,
-              MOD3_HALLPIN = A11;
+const uint8_t MOD1_HALLPIN = A16,
+              MOD2_HALLPIN = A15,
+              MOD3_HALLPIN = A14;
 
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////

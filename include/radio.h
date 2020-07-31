@@ -7,7 +7,7 @@
 
 #define RADIO_INTERFACE Serial1
 const int RADIO_BAUD_RATE = 38400;
-const uint8_t RADIO_SET_PIN = 200;
+const uint8_t RADIO_SET_PIN = 2;
 
 #define GETFLAG(i, f) (i & (1 << f))
 
