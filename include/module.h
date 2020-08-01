@@ -38,9 +38,9 @@ const uint8_t MOD1_M1_DIRPIN = 21, MOD1_M1_PWMPIN = 23,
               MOD3_M1_DIRPIN = 5, MOD3_M1_PWMPIN = 3,
               MOD3_M2_DIRPIN = 6, MOD3_M2_PWMPIN = 4;
 
-const uint8_t MOD1_HALLPIN = A16,
-              MOD2_HALLPIN = A15,
-              MOD3_HALLPIN = A14;
+const uint8_t MOD1_HALLPIN = A15,
+              MOD2_HALLPIN = A14,
+              MOD3_HALLPIN = A16;
 
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
