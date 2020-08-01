@@ -9,8 +9,10 @@ Module::Module(moduleID id_, Encoder *m1e_, Encoder *m2e_, MotorController *mc_,
 {
 
     pinMode(hallPin, INPUT);
-    speedControl = new FastFloatPID(&measuredSpeed, &PIDspeed, &targetSpeed, SPEED_KP, SPEED_KI, SPEED_KD, DIRECT);
-    angleControl = new FastFloatPID(&measuredAngle, &PIDangle, &targetAngle, ANGLE_KP, ANGLE_KI, ANGLE_KD, REVERSE);
+    speedControl = new FastFloatPID(&measuredSpeed, &PIDspeed, &targetSpeed,
+        SPEED_KP, SPEED_KI, SPEED_KD, DIRECT);
+    angleControl = new FastFloatPID(&measuredAngle, &PIDangle, &targetAngle,
+        ANGLE_KP, ANGLE_KI, ANGLE_KD, DIRECT);
     speedControl->SetSampleTime(SPEED_PID_SAMPLE_TIME);
     angleControl->SetSampleTime(ANGLE_PID_SAMPLE_TIME);
     speedControl->SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
@@ -19,7 +21,8 @@ Module::Module(moduleID id_, Encoder *m1e_, Encoder *m2e_, MotorController *mc_,
 
 void Module::updateAngle()
 {
-    measuredAngle = (PI * (m1Encoder->read() + m2Encoder->read())) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);
+    measuredAngle = (PI * (m1Encoder->read() + m2Encoder->read()))
+        / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);
     //the 2 from the radian conversion and the averaging calculation cancel out
     angleControl->Compute();
 }
@@ -28,7 +31,8 @@ void Module::updateSpeed()
 {
     int32_t tickDifference = m1Encoder->read() - m2Encoder->read();
 
-    measuredSpeed = (WHEEL_CIRCUMFERENCE_IN * (tickDifference - lastTickDifference)) / (ENCODER_TICKS_PER_REVOLUTION * WHEEL_RATIO * SPEED_PID_SAMPLE_TIME);
+    measuredSpeed = (WHEEL_CIRCUMFERENCE_IN * (tickDifference - lastTickDifference))
+        / (ENCODER_TICKS_PER_REVOLUTION * WHEEL_RATIO * SPEED_PID_SAMPLE_TIME);
 
     lastTickDifference = tickDifference;
     speedControl->Compute();
@@ -53,7 +57,7 @@ boolean Module::home()
             m2Encoder->write(0);
             return true;
         }
-        if (millis() - startTime > 5000)
+        if (millis() - startTime > 2000)
         {
             moduleController->setOutput(0, 0);
             m1Encoder->write(0);
