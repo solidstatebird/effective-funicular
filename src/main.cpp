@@ -10,17 +10,13 @@
 
 const unsigned long SAFETY_TIMEOUT_MS = 1000;
 
-Encoder MOD1_M1_ENCODER(19, 18), MOD1_M2_ENCODER(17, 16),
-    MOD2_M1_ENCODER(25, 26), MOD2_M2_ENCODER(27, 28),
-    MOD3_M1_ENCODER(7, 8), MOD3_M2_ENCODER(9, 10);
+MotorController module1Conroller(ID_MODULE1),
+    module2Conroller(ID_MODULE2),
+    module3Conroller(ID_MODULE3);
 
-MotorController module1Conroller(MOD1_M1_DIRPIN, MOD1_M2_DIRPIN, MOD1_M1_PWMPIN, MOD1_M2_PWMPIN),
-    module2Conroller(MOD2_M1_DIRPIN, MOD2_M2_DIRPIN, MOD2_M1_PWMPIN, MOD2_M2_PWMPIN),
-    module3Conroller(MOD3_M1_DIRPIN, MOD3_M2_DIRPIN, MOD3_M1_PWMPIN, MOD3_M2_PWMPIN);
-
-Module module1(ID_MODULE1, &MOD1_M1_ENCODER, &MOD1_M2_ENCODER, &module1Conroller),
-    module2(ID_MODULE2, &MOD2_M1_ENCODER, &MOD2_M2_ENCODER, &module2Conroller),
-    module3(ID_MODULE3, &MOD3_M1_ENCODER, &MOD3_M2_ENCODER, &module3Conroller);
+Module module1(ID_MODULE1, &module1Conroller),
+    module2(ID_MODULE2, &module2Conroller),
+    module3(ID_MODULE3, &module3Conroller);
 
 boolean enabled = false;
 

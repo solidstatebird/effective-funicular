@@ -27,18 +27,25 @@ const float SPEED_KP = 1.2,
             ANGLE_KI = 0.0,
             ANGLE_KD = 0.0;
 
+//module   1, 2, 3
+
 const int MAGNET_THRESHOLDS[] = {25, 50, 200};
 
-//PINS
+//////////////////////////////// PINS ////////////////////////////////
 
-const uint8_t MOD1_M1_DIRPIN = 21, MOD1_M1_PWMPIN = 23,
-              MOD1_M2_DIRPIN = 20, MOD1_M2_PWMPIN = 22,
-              MOD2_M1_DIRPIN = 31, MOD2_M1_PWMPIN = 29,
-              MOD2_M2_DIRPIN = 32, MOD2_M2_PWMPIN = 30,
-              MOD3_M1_DIRPIN = 5, MOD3_M1_PWMPIN = 3,
-              MOD3_M2_DIRPIN = 6, MOD3_M2_PWMPIN = 4;
+//           <module 1> <module 2>
+//             m1, m2     m1, m2
+
+const uint8_t DIRPINS[3][2] = {{21, 20}, {31, 32}, {5, 6}};
+const uint8_t PWMPINS[3][2] = {{23, 22}, {29, 30}, {3, 4}};
 
 const uint8_t HALLPINS[] = {A15, A14, A16};
+
+//           <module 1>      <module 2>       <module 3>
+//          <m1>    <m2>    <m1>    <m2>     <m1>    <m2>
+//          A,B      A,B    A,B     A,B      A,B     A,B
+
+const uint8_t ENCODERPINS[3][2][2] = {{{19, 18}, {17, 16}}, {{25, 26}, {27, 28}}, {{7, 8}, {9, 10}}};
 
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
@@ -54,9 +61,10 @@ enum ModuleID
 class MotorController
 {
 public:
-    MotorController(uint8_t, uint8_t, uint8_t, uint8_t);
+    ModuleID id;
     void setOutput(int, int);
     void zero();
+    MotorController(ModuleID);
 
 private:
     uint8_t dir1, dir2,
@@ -86,7 +94,7 @@ public:
     int getMaxOutput();
     void updateMotorController(int);
 
-    Module(ModuleID, Encoder *, Encoder *, MotorController *);
+    Module(ModuleID, MotorController *);
 
 private:
     boolean armed = false;

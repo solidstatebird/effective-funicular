@@ -4,11 +4,13 @@
 
 #include "module.h"
 
-Module::Module(ModuleID id_, Encoder *m1e_, Encoder *m2e_, MotorController *mc_)
-    : id(id_), m1Encoder(m1e_), m2Encoder(m2e_), moduleController(mc_)
+Module::Module(ModuleID id_, MotorController *mc_)
+    : id(id_), moduleController(mc_)
 {
     hallPin = HALLPINS[id];
     pinMode(hallPin, INPUT);
+    m1Encoder = new Encoder(ENCODERPINS[id][0][0], ENCODERPINS[id][0][1]);
+    m2Encoder = new Encoder(ENCODERPINS[id][1][0], ENCODERPINS[id][1][1]);
     speedControl = new FastFloatPID(&measuredSpeed, &PIDspeed, &targetSpeed,
         SPEED_KP, SPEED_KI, SPEED_KD, DIRECT);
     angleControl = new FastFloatPID(&measuredAngle, &PIDangle, &targetAngle,
@@ -137,10 +139,13 @@ void Module::setSpeed(float setpoint)
     targetSpeed = setpoint;
 }
 
-MotorController::MotorController(uint8_t dir1_, uint8_t dir2_, uint8_t pwm1_, uint8_t pwm2_)
-    : dir1(dir1_), dir2(dir2_), pwm1(pwm1_), pwm2(pwm2_)
+MotorController::MotorController(ModuleID id_)
+    : id(id_)
 {
-
+    dir1 = DIRPINS[id][0];
+    dir2 = DIRPINS[id][1];
+    pwm1 = PWMPINS[id][0];
+    pwm2 = PWMPINS[id][1];
     pinMode(dir1, OUTPUT);
     pinMode(dir2, OUTPUT);
     pinMode(pwm1, OUTPUT);
