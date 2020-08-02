@@ -27,7 +27,7 @@ const float SPEED_KP = 1.2,
             ANGLE_KI = 0.0,
             ANGLE_KD = 0.0;
 
-const int MAGNET_THRESHOLD = 80;
+const int MAGNET_THRESHOLDS[] = {25, 50, 200};
 
 //PINS
 
@@ -46,9 +46,9 @@ const uint8_t HALLPINS[] = {A15, A14, A16};
 
 enum ModuleID
 {
-    MODULE_1 = 0,
-    MODULE_2 = 1,
-    MODULE_3 = 2
+    ID_MODULE1 = 0,
+    ID_MODULE2 = 1,
+    ID_MODULE3 = 2
 };
 
 class MotorController

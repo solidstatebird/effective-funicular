@@ -18,9 +18,9 @@ MotorController module1Conroller(MOD1_M1_DIRPIN, MOD1_M2_DIRPIN, MOD1_M1_PWMPIN,
     module2Conroller(MOD2_M1_DIRPIN, MOD2_M2_DIRPIN, MOD2_M1_PWMPIN, MOD2_M2_PWMPIN),
     module3Conroller(MOD3_M1_DIRPIN, MOD3_M2_DIRPIN, MOD3_M1_PWMPIN, MOD3_M2_PWMPIN);
 
-Module module1(MODULE_1, &MOD1_M1_ENCODER, &MOD1_M2_ENCODER, &module1Conroller),
-    module2(MODULE_2, &MOD2_M1_ENCODER, &MOD2_M2_ENCODER, &module2Conroller),
-    module3(MODULE_3, &MOD3_M1_ENCODER, &MOD3_M2_ENCODER, &module3Conroller);
+Module module1(ID_MODULE1, &MOD1_M1_ENCODER, &MOD1_M2_ENCODER, &module1Conroller),
+    module2(ID_MODULE2, &MOD2_M1_ENCODER, &MOD2_M2_ENCODER, &module2Conroller),
+    module3(ID_MODULE3, &MOD3_M1_ENCODER, &MOD3_M2_ENCODER, &module3Conroller);
 
 boolean enabled = false;
 
@@ -48,20 +48,17 @@ void setup()
 
 void loop()
 {
-    if (Serial.available() > 6)
-    {
-        String b = Serial.readStringUntil('\n');
-        module1.setSpeed(b.substring(0, 4).toFloat());
-        module1.setAngle(DEG_TO_RAD * b.substring(5, 8).toFloat());
-    }
+    // Serial.print(analogRead(HALLPINS[ID_MODULE1])); Serial.print("  ");
+    // Serial.print(analogRead(HALLPINS[ID_MODULE2])); Serial.print("  ");
+    // Serial.println(analogRead(HALLPINS[ID_MODULE3]));
 
-    //radioUpdate();
-    // if (radioPacketAvailable())
-    //     parsePacket();
-    #warning disarm timer diabled
-    //updateDisarmTimer();
-    updateSpeeds();
-    updateAngles();
+    // //radioUpdate();
+    // // if (radioPacketAvailable())
+    // //     parsePacket();
+    // #warning disarm timer diabled
+    // //updateDisarmTimer();
+    // updateSpeeds();
+    // updateAngles();
 }
 
 void parsePacket()
