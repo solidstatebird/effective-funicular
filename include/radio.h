@@ -2,7 +2,7 @@
 #define RADIO_H
 
 #include <Arduino.h>
-#include <PacketSerial.h>
+#include <PacketSerial.h> //https://github.com/bakercp/PacketSerial.git
 #include <FastCRC.h>
 
 #define RADIO_INTERFACE Serial1

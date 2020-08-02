@@ -1,8 +1,5 @@
 #include <Arduino.h>
 
-#include <Encoder.h>
-#include <FastFloatPID.h> //https://github.com/macaba/FastFloatPID
-
 #include "radio.h"
 #include "module.h"
 

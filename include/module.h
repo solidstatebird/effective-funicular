@@ -2,8 +2,8 @@
 #define MODULE_H
 
 #include <Arduino.h>
-#include <Encoder.h>
-#include <FastFloatPID.h>
+#include <VelocityEncoder.h>
+#include <FastFloatPID.h> //https://github.com/macaba/FastFloatPID
 
 /////////////////////////////////////////////////////////////////////////
 ////////////////////////////   CONFIG     ///////////////////////////////
@@ -77,7 +77,7 @@ public:
     ModuleID id;
 
     FastFloatPID *speedControl, *angleControl;
-    Encoder *m1Encoder, *m2Encoder;
+    VelocityEncoder *m1Encoder, *m2Encoder;
     MotorController *moduleController;
 
     void disarm();

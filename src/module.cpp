@@ -9,8 +9,8 @@ Module::Module(ModuleID id_, MotorController *mc_)
 {
     hallPin = HALLPINS[id];
     pinMode(hallPin, INPUT);
-    m1Encoder = new Encoder(ENCODERPINS[id][0][0], ENCODERPINS[id][0][1]);
-    m2Encoder = new Encoder(ENCODERPINS[id][1][0], ENCODERPINS[id][1][1]);
+    m1Encoder = new VelocityEncoder(ENCODERPINS[id][0][0], ENCODERPINS[id][0][1]);
+    m2Encoder = new VelocityEncoder(ENCODERPINS[id][1][0], ENCODERPINS[id][1][1]);
     speedControl = new FastFloatPID(&measuredSpeed, &PIDspeed, &targetSpeed,
         SPEED_KP, SPEED_KI, SPEED_KD, DIRECT);
     angleControl = new FastFloatPID(&measuredAngle, &PIDangle, &targetAngle,
