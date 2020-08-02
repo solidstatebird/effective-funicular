@@ -4,10 +4,10 @@
 
 #include "module.h"
 
-Module::Module(moduleID id_, Encoder *m1e_, Encoder *m2e_, MotorController *mc_, uint8_t hp_)
-    : id(id_), m1Encoder(m1e_), m2Encoder(m2e_), moduleController(mc_), hallPin(hp_)
+Module::Module(ModuleID id_, Encoder *m1e_, Encoder *m2e_, MotorController *mc_)
+    : id(id_), m1Encoder(m1e_), m2Encoder(m2e_), moduleController(mc_)
 {
-
+    hallPin = HALLPINS[id];
     pinMode(hallPin, INPUT);
     speedControl = new FastFloatPID(&measuredSpeed, &PIDspeed, &targetSpeed,
         SPEED_KP, SPEED_KI, SPEED_KD, DIRECT);

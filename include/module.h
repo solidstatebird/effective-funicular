@@ -38,19 +38,17 @@ const uint8_t MOD1_M1_DIRPIN = 21, MOD1_M1_PWMPIN = 23,
               MOD3_M1_DIRPIN = 5, MOD3_M1_PWMPIN = 3,
               MOD3_M2_DIRPIN = 6, MOD3_M2_PWMPIN = 4;
 
-const uint8_t MOD1_HALLPIN = A15,
-              MOD2_HALLPIN = A14,
-              MOD3_HALLPIN = A16;
+const uint8_t HALLPINS[] = {A15, A14, A16};
 
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 
-enum moduleID
+enum ModuleID
 {
-    MODULE_1 = 1,
-    MODULE_2 = 2,
-    MODULE_3 = 3
+    MODULE_1 = 0,
+    MODULE_2 = 1,
+    MODULE_3 = 2
 };
 
 class MotorController
@@ -68,7 +66,7 @@ private:
 class Module
 {
 public:
-    moduleID id;
+    ModuleID id;
 
     FastFloatPID *speedControl, *angleControl;
     Encoder *m1Encoder, *m2Encoder;
@@ -88,7 +86,7 @@ public:
     int getMaxOutput();
     void updateMotorController(int);
 
-    Module(moduleID, Encoder *, Encoder *, MotorController *, uint8_t);
+    Module(ModuleID, Encoder *, Encoder *, MotorController *);
 
 private:
     boolean armed = false;

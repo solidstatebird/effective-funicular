@@ -18,9 +18,9 @@ MotorController module1Conroller(MOD1_M1_DIRPIN, MOD1_M2_DIRPIN, MOD1_M1_PWMPIN,
     module2Conroller(MOD2_M1_DIRPIN, MOD2_M2_DIRPIN, MOD2_M1_PWMPIN, MOD2_M2_PWMPIN),
     module3Conroller(MOD3_M1_DIRPIN, MOD3_M2_DIRPIN, MOD3_M1_PWMPIN, MOD3_M2_PWMPIN);
 
-Module module1(MODULE_1, &MOD1_M1_ENCODER, &MOD1_M2_ENCODER, &module1Conroller, MOD1_HALLPIN),
-    module2(MODULE_2, &MOD2_M1_ENCODER, &MOD2_M2_ENCODER, &module2Conroller, MOD2_HALLPIN),
-    module3(MODULE_3, &MOD3_M1_ENCODER, &MOD3_M2_ENCODER, &module3Conroller, MOD3_HALLPIN);
+Module module1(MODULE_1, &MOD1_M1_ENCODER, &MOD1_M2_ENCODER, &module1Conroller),
+    module2(MODULE_2, &MOD2_M1_ENCODER, &MOD2_M2_ENCODER, &module2Conroller),
+    module3(MODULE_3, &MOD3_M1_ENCODER, &MOD3_M2_ENCODER, &module3Conroller);
 
 boolean enabled = false;
 
@@ -41,23 +41,13 @@ void setup()
     // module2.home();
     // module3.home();
 
-    module1.arm();
+    //module1.arm();
     // module2.arm();
     // module3.arm();
 }
 
 void loop()
 {
-    // module1.setSpeed(30.0);
-    // static unsigned long lastANGLECHANGE = 0;
-    // if(millis() - lastANGLECHANGE > 1000) {
-    //     // mod1_targetangle = 3.14 * sin(millis() * 0.00328);
-    //     // mod1_targetspeed = 60 * sin(HALF_PI/2 + millis() * 0.00328);
-    //     static float angle = 0;
-    //     module1.setAngle(angle + (90* DEG_TO_RAD));
-    //     lastANGLECHANGE = millis();
-    // }
-
     if (Serial.available() > 6)
     {
         String b = Serial.readStringUntil('\n');
@@ -66,13 +56,12 @@ void loop()
     }
 
     //radioUpdate();
+    // if (radioPacketAvailable())
+    //     parsePacket();
     #warning disarm timer diabled
     //updateDisarmTimer();
     updateSpeeds();
     updateAngles();
-    if (radioPacketAvailable())
-        parsePacket();
-
 }
 
 void parsePacket()
