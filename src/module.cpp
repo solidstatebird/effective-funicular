@@ -31,12 +31,15 @@ void Module::updateAngle()
 
 void Module::updateSpeed()
 {
-    int32_t tickDifference = m1Encoder->read() - m2Encoder->read();
+    unsigned long tp1 = m1Encoder->getTickPeriod();
+    unsigned long tp2 = m2Encoder->getTickPeriod();
+    tp1 = tp1 < 350 ? 350 : tp1;
+    tp2 = tp2 < 350 ? 350 : tp2;
 
-    measuredSpeed = (WHEEL_CIRCUMFERENCE_IN * (tickDifference - lastTickDifference))
-        / (ENCODER_TICKS_PER_REVOLUTION * WHEEL_RATIO * SPEED_PID_SAMPLE_TIME);
+    measuredSpeed = ((1e6 / tp1) / ENCODER_TICKS_PER_REVOLUTION) 
+        - ((1e6 / tp2) / ENCODER_TICKS_PER_REVOLUTION);  //motor equivalent rps
+    measuredSpeed = (measuredSpeed / WHEEL_RATIO) * WHEEL_CIRCUMFERENCE_IN; //inches/sec
 
-    lastTickDifference = tickDifference;
     speedControl->Compute();
 }
 

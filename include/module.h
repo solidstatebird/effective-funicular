@@ -9,7 +9,7 @@
 ////////////////////////////   CONFIG     ///////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 const float ANGLE_PID_SAMPLE_TIME = 0.002;
-const float SPEED_PID_SAMPLE_TIME = 0.02;
+const float SPEED_PID_SAMPLE_TIME = 0.002;
 
 const float ENCODER_TICKS_PER_REVOLUTION = 28;
 
@@ -104,8 +104,6 @@ private:
     float measuredSpeed, measuredAngle,
         targetSpeed, targetAngle,
         PIDspeed, PIDangle = 0;
-
-    int32_t lastTickDifference = 0;
 };
 
 #endif

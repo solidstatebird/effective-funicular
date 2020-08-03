@@ -40,23 +40,15 @@
 
 #include "utility/direct_pin_read.h"
 
-#if defined(ENCODER_USE_INTERRUPTS) || !defined(ENCODER_DO_NOT_USE_INTERRUPTS)
+//changed to only permit interrupt operation
 #define ENCODER_USE_INTERRUPTS
 #define ENCODER_ARGLIST_SIZE CORE_NUM_INTERRUPT
 #include "utility/interrupt_pins.h"
 #ifdef ENCODER_OPTIMIZE_INTERRUPTS
 #include "utility/interrupt_config.h"
 #endif
-#else
-#define ENCODER_ARGLIST_SIZE 0
-#endif
 
 
-
-// All the data needed by interrupts is consolidated into this ugly struct
-// to facilitate assembly language optimizing of the speed critical update.
-// The assembly code uses auto-incrementing addressing modes, so the struct
-// must remain in exactly this order.
 typedef struct {
 	volatile IO_REG_TYPE * pin1_register;
 	volatile IO_REG_TYPE * pin2_register;
@@ -64,6 +56,8 @@ typedef struct {
 	IO_REG_TYPE            pin2_bitmask;
 	uint8_t                state;
 	int32_t                position;
+	unsigned long 		   tickPeriod;
+	unsigned long 		   lastUpdate;
 } VelocityEncoder_internal_state_t;
 
 class VelocityEncoder
@@ -84,6 +78,8 @@ public:
 		encoder.pin2_register = PIN_TO_BASEREG(pin2);
 		encoder.pin2_bitmask = PIN_TO_BITMASK(pin2);
 		encoder.position = 0;
+		encoder.lastUpdate = 0;
+		encoder.lastUpdate = 0;
 		// allow time for a passive R-C filter to charge
 		// through the pullup resistors, before reading
 		// the initial state
@@ -204,6 +200,9 @@ public:
 	// but it is public to allow static interrupt routines.
 	// DO NOT call update() directly from sketches.
 	static void update(VelocityEncoder_internal_state_t *arg) {
+		unsigned long time = micros();
+		arg->tickPeriod = time - arg->lastUpdate;
+		arg->lastUpdate = time;
 		uint8_t p1val = DIRECT_PIN_READ(arg->pin1_register, arg->pin1_bitmask);
 		uint8_t p2val = DIRECT_PIN_READ(arg->pin2_register, arg->pin2_bitmask);
 		uint8_t state = arg->state & 3;
@@ -225,6 +224,14 @@ public:
 				return;
 		}
 	}
+
+	unsigned long getTickPeriod() {
+		noInterrupts();
+		unsigned long temp = encoder.tickPeriod;
+		interrupts();
+		return temp;
+	}
+
 private:
 
 
@@ -786,40 +793,6 @@ private:
 	#endif
 #endif
 };
-
-#if defined(ENCODER_USE_INTERRUPTS) && defined(ENCODER_OPTIMIZE_INTERRUPTS)
-#if defined(__AVR__)
-#if defined(INT0_vect) && CORE_NUM_INTERRUPT > 0
-ISR(INT0_vect) { VelocityEncoder::update(VelocityEncoder::interruptArgs[SCRAMBLE_INT_ORDER(0)]); }
-#endif
-#if defined(INT1_vect) && CORE_NUM_INTERRUPT > 1
-ISR(INT1_vect) { VelocityEncoder::update(VelocityEncoder::interruptArgs[SCRAMBLE_INT_ORDER(1)]); }
-#endif
-#if defined(INT2_vect) && CORE_NUM_INTERRUPT > 2
-ISR(INT2_vect) { VelocityEncoder::update(VelocityEncoder::interruptArgs[SCRAMBLE_INT_ORDER(2)]); }
-#endif
-#if defined(INT3_vect) && CORE_NUM_INTERRUPT > 3
-ISR(INT3_vect) { VelocityEncoder::update(VelocityEncoder::interruptArgs[SCRAMBLE_INT_ORDER(3)]); }
-#endif
-#if defined(INT4_vect) && CORE_NUM_INTERRUPT > 4
-ISR(INT4_vect) { VelocityEncoder::update(VelocityEncoder::interruptArgs[SCRAMBLE_INT_ORDER(4)]); }
-#endif
-#if defined(INT5_vect) && CORE_NUM_INTERRUPT > 5
-ISR(INT5_vect) { VelocityEncoder::update(VelocityEncoder::interruptArgs[SCRAMBLE_INT_ORDER(5)]); }
-#endif
-#if defined(INT6_vect) && CORE_NUM_INTERRUPT > 6
-ISR(INT6_vect) { VelocityEncoder::update(VelocityEncoder::interruptArgs[SCRAMBLE_INT_ORDER(6)]); }
-#endif
-#if defined(INT7_vect) && CORE_NUM_INTERRUPT > 7
-ISR(INT7_vect) { VelocityEncoder::update(VelocityEncoder::interruptArgs[SCRAMBLE_INT_ORDER(7)]); }
-#endif
-#endif // AVR
-#if defined(attachInterrupt)
-// Don't intefere with other libraries or sketch use of attachInterrupt()
-// https://github.com/PaulStoffregen/VelocityEncoder/issues/8
-#undef attachInterrupt
-#endif
-#endif // ENCODER_OPTIMIZE_INTERRUPTS
 
 
 #endif
