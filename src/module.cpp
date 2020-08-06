@@ -12,19 +12,26 @@ Module::Module(ModuleID id_, MotorController *mc_)
     m1Encoder = new VelocityEncoder(ENCODERPINS[id][0][0], ENCODERPINS[id][0][1]);
     m2Encoder = new VelocityEncoder(ENCODERPINS[id][1][0], ENCODERPINS[id][1][1]);
     speedControl = new FastFloatPID(&measuredSpeed, &PIDspeed, &targetSpeed,
-        SPEED_KP, SPEED_KI, SPEED_KD, DIRECT);
+                                    SPEED_KP, SPEED_KI, SPEED_KD, DIRECT);
     angleControl = new FastFloatPID(&measuredAngle, &PIDangle, &targetAngle,
-        ANGLE_KP, ANGLE_KI, ANGLE_KD, DIRECT);
+                                    ANGLE_KP, ANGLE_KI, ANGLE_KD, DIRECT);
     speedControl->SetSampleTime(SPEED_PID_SAMPLE_TIME);
     angleControl->SetSampleTime(ANGLE_PID_SAMPLE_TIME);
     speedControl->SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
     angleControl->SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
 }
 
+Module::~Module()
+{
+    delete speedControl;
+    delete angleControl;
+    delete m1Encoder;
+    delete m2Encoder;
+}
+
 void Module::updateAngle()
 {
-    measuredAngle = (PI * (m1Encoder->read() + m2Encoder->read()))
-        / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);
+    measuredAngle = (PI * (m1Encoder->read() + m2Encoder->read())) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);
     //the 2 from the radian conversion and the averaging calculation cancel out
     angleControl->Compute();
 }
@@ -36,9 +43,8 @@ void Module::updateSpeed()
     tp1 = tp1 < 350 ? 350 : tp1;
     tp2 = tp2 < 350 ? 350 : tp2;
 
-    measuredSpeed = ((1e6 / tp1) / ENCODER_TICKS_PER_REVOLUTION) 
-        - ((1e6 / tp2) / ENCODER_TICKS_PER_REVOLUTION);  //motor equivalent rps
-    measuredSpeed = (measuredSpeed / WHEEL_RATIO) * WHEEL_CIRCUMFERENCE_IN; //inches/sec
+    measuredSpeed = ((1e6 / tp1) / ENCODER_TICKS_PER_REVOLUTION) - ((1e6 / tp2) / ENCODER_TICKS_PER_REVOLUTION); //motor equivalent rps
+    measuredSpeed = (measuredSpeed / WHEEL_RATIO) * WHEEL_CIRCUMFERENCE_IN;                                      //inches/sec
 
     speedControl->Compute();
 }
@@ -82,7 +88,7 @@ void Module::updateMotorController(int max)
     m2 += PIDangle;
 
     moduleController->setOutput((int)(MAX_MOTOR_OUTPUT * (m1 / max)),
-        (int)(MAX_MOTOR_OUTPUT * (m2 / max)));
+                                (int)(MAX_MOTOR_OUTPUT * (m2 / max)));
 }
 
 int Module::getMaxOutput()
@@ -131,12 +137,6 @@ void Module::setSpeed(float setpoint)
     else
     {
         speedControl->SetOutputLimits(-MAX_MOTOR_OUTPUT, 0);
-    }
-    //clear any I error accumulation when desired speed is zero
-    if (setpoint == 0)
-    {
-        speedControl->SetMode(MANUAL);
-        speedControl->SetMode(AUTOMATIC);
     }
 
     targetSpeed = setpoint;

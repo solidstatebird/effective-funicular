@@ -74,6 +74,8 @@ private:
 class Module
 {
 public:
+    Module(ModuleID, MotorController *);
+    ~Module();
     ModuleID id;
 
     FastFloatPID *speedControl, *angleControl;
@@ -93,8 +95,6 @@ public:
 
     int getMaxOutput();
     void updateMotorController(int);
-
-    Module(ModuleID, MotorController *);
 
 private:
     boolean armed = false;
