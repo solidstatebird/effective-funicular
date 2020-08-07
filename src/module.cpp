@@ -79,6 +79,11 @@ boolean Module::home()
 
 void Module::updateMotorController(int max)
 {
+    if(!armed) {
+        moduleController->zero();
+        return;
+    }
+    
     max = abs(max);
 
     float m1 = -PIDspeed;
