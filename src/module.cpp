@@ -9,9 +9,9 @@ Module::Module(ModuleID id_, MotorController *mc_)
 {
     hallPin = HALLPINS[id];
     pinMode(hallPin, INPUT);
-    m1Encoder = new VelocityEncoder(ENCODERPINS[id][0][0], ENCODERPINS[id][0][1]);
-    m2Encoder = new VelocityEncoder(ENCODERPINS[id][1][0], ENCODERPINS[id][1][1]);
-    speedControl = new FastFloatPID(&measuredSpeed, &PIDspeed, &targetSpeed,
+    m1Encoder = new Encoder(ENCODERPINS[id][0][0], ENCODERPINS[id][0][1]);
+    m2Encoder = new Encoder(ENCODERPINS[id][1][0], ENCODERPINS[id][1][1]);
+    speedControl = new FastFloatPID(&measuredWheelPosition, &PIDspeed, &targetWheelPosition,
                                     SPEED_KP, SPEED_KI, SPEED_KD, DIRECT);
     angleControl = new FastFloatPID(&measuredAngle, &PIDangle, &targetAngle,
                                     ANGLE_KP, ANGLE_KI, ANGLE_KD, DIRECT);
@@ -38,13 +38,12 @@ void Module::updateAngle()
 
 void Module::updateSpeed()
 {
-    unsigned long tp1 = m1Encoder->getTickPeriod();
-    unsigned long tp2 = m2Encoder->getTickPeriod();
-    tp1 = tp1 < 350 ? 350 : tp1;
-    tp2 = tp2 < 350 ? 350 : tp2;
+    int32_t ticks1 = m1Encoder->read();
+    int32_t ticks2 = m2Encoder->read();
 
-    measuredSpeed = ((1e6 / tp1) / ENCODER_TICKS_PER_REVOLUTION) - ((1e6 / tp2) / ENCODER_TICKS_PER_REVOLUTION); //motor equivalent rps
-    measuredSpeed = (measuredSpeed / WHEEL_RATIO) * WHEEL_CIRCUMFERENCE_IN;                                      //inches/sec
+    measuredWheelPosition = ticks1 - ticks2;
+    
+    targetWheelPosition += wheelRate * SPEED_PID_SAMPLE_TIME ;
 
     speedControl->Compute();
 }
@@ -108,7 +107,6 @@ void Module::disarm()
 {
     angleControl->SetMode(MANUAL);
     speedControl->SetMode(MANUAL);
-    targetSpeed = 0;
     PIDangle = 0;
     PIDspeed = 0;
     moduleController->zero();
@@ -117,6 +115,7 @@ void Module::disarm()
 
 void Module::arm()
 {
+
     angleControl->SetMode(AUTOMATIC);
     speedControl->SetMode(AUTOMATIC);
     armed = true;
@@ -129,17 +128,7 @@ void Module::setAngle(float setpoint)
 
 void Module::setSpeed(float setpoint)
 {
-    //prevent the speed PID from sending an output in the wrong direction
-    if (setpoint >= 0)
-    {
-        speedControl->SetOutputLimits(0, MAX_MOTOR_OUTPUT);
-    }
-    else
-    {
-        speedControl->SetOutputLimits(-MAX_MOTOR_OUTPUT, 0);
-    }
-
-    targetSpeed = setpoint;
+    wheelRate = setpoint * ((ENCODER_TICKS_PER_REVOLUTION * WHEEL_RATIO) / WHEEL_CIRCUMFERENCE_IN); //in/sec to ticks/sec
 }
 
 MotorController::MotorController(ModuleID id_)

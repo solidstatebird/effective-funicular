@@ -2,26 +2,26 @@
 #define MODULE_H
 
 #include <Arduino.h>
-#include <VelocityEncoder.h>
+#include <Encoder.h>
 #include <FastFloatPID.h> //https://github.com/macaba/FastFloatPID
 
 /////////////////////////////////////////////////////////////////////////
 ////////////////////////////   CONFIG     ///////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 const float ANGLE_PID_SAMPLE_TIME = 0.002;
-const float SPEED_PID_SAMPLE_TIME = 0.002;
+const float SPEED_PID_SAMPLE_TIME = 0.001;
 
 const float ENCODER_TICKS_PER_REVOLUTION = 28;
 
 const int MAX_MOTOR_OUTPUT = 255;
 
-const float STEERING_RATIO = (49.0 / 25.0) * (49.0 / 25.0) * (97.0 / 25.0),
-            WHEEL_RATIO = STEERING_RATIO * (15.0 / 59.0);
+const float STEERING_RATIO = (49.0 / 25.0) * (49.0 / 25.0) * (97.0 / 25.0), //motor:module
+            WHEEL_RATIO = STEERING_RATIO * (15.0 / 59.0); //motor:wheel
 
 const float WHEEL_CIRCUMFERENCE_IN = PI * 2.5;
 
-const float SPEED_KP = 1.2,
-            SPEED_KI = 2.0,
+const float SPEED_KP = 10,
+            SPEED_KI = 0,
             SPEED_KD = 0.0,
             ANGLE_KP = 110.0,
             ANGLE_KI = 0.0,
@@ -79,7 +79,7 @@ public:
     ModuleID id;
 
     FastFloatPID *speedControl, *angleControl;
-    VelocityEncoder *m1Encoder, *m2Encoder;
+    Encoder *m1Encoder, *m2Encoder;
     MotorController *moduleController;
 
     void disarm();
@@ -101,9 +101,10 @@ private:
 
     uint8_t hallPin;
 
-    float measuredSpeed, measuredAngle,
-        targetSpeed, targetAngle,
-        PIDspeed, PIDangle = 0;
+    float measuredWheelPosition, measuredAngle,
+        targetWheelPosition, targetAngle,
+        PIDspeed, PIDangle,
+        wheelRate = 0;
 };
 
 #endif

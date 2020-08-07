@@ -45,13 +45,19 @@ void loop()
     // Serial.print(analogRead(HALLPINS[ID_MODULE2])); Serial.print("  ");
     // Serial.println(analogRead(HALLPINS[ID_MODULE3]));
 
+    if (Serial.available() > 6)
+    {
+        String b = Serial.readStringUntil('\n');
+        module3.setSpeed(b.substring(0, 4).toFloat());
+        // module1.setAngle(DEG_TO_RAD * b.substring(5, 8).toFloat());
+    }
     // //radioUpdate();
     // // if (radioPacketAvailable())
     // //     parsePacket();
     // #warning disarm timer diabled
     // //updateDisarmTimer();
-    // updateSpeeds();
-    // updateAngles();
+    updateSpeeds();
+    updateAngles();
 }
 
 void parsePacket()
