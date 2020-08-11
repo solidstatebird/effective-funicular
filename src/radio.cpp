@@ -4,6 +4,8 @@
 
 #include "radio.h"
 
+using namespace Radio;
+
 void processPacket(const void *sender, const uint8_t *, size_t);
 void writeFloat(float, uint8_t, const uint16_t);
 float readFloat(const uint8_t *, const uint16_t);
@@ -14,9 +16,7 @@ FastCRC16 crc16;
 FastCRC8 crc8;
 boolean newData = false;
 
-//exposed functions
-
-void radioInitialize()
+void Radio::initialize()
 {
     RADIO_INTERFACE.begin(RADIO_BAUD_RATE);
     packetInterface.setStream(&RADIO_INTERFACE);
@@ -25,7 +25,7 @@ void radioInitialize()
     pinMode(RADIO_SET_PIN, OUTPUT);
 }
 
-void radioSendStatus()
+void Radio::sendStatus()
 {
     uint8_t data[RESPONSE_PACKET_SIZE];
     data[0] = 0;
@@ -36,17 +36,17 @@ void radioSendStatus()
     packetInterface.send(data, RESPONSE_PACKET_SIZE);
 }
 
-void radioUpdate()
+inline void Radio::update()
 {
     packetInterface.update();
 }
 
-boolean radioPacketAvailable()
+boolean Radio::packetAvailable()
 {
     return newData;
 }
 
-Packet radioGetPacket()
+Packet Radio::getPacket()
 {
     newData = false;
     return packet;

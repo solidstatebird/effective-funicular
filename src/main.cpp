@@ -28,7 +28,7 @@ void setup()
     Serial.begin(2000000);
     Serial.setTimeout(10000);
 
-    radioInitialize();
+    Radio::initialize();
 
     // module1.home();
     // module2.home();
@@ -51,19 +51,19 @@ void loop()
         module3.setSpeed(b.substring(0, 4).toFloat());
         // module1.setAngle(DEG_TO_RAD * b.substring(5, 8).toFloat());
     }
-    // //radioUpdate();
-    // // if (radioPacketAvailable())
-    // //     parsePacket();
-    // #warning disarm timer diabled
-    // //updateDisarmTimer();
+    //Radio::update();
+    // if (Radio::packetAvailable())
+    //     parsePacket();
+    #warning disarm timer diabled
+    //updateDisarmTimer();
     updateSpeeds();
     updateAngles();
 }
 
 void parsePacket()
 {
-    Packet packet = radioGetPacket();
-    if (GETFLAG(packet.flags, FLAG_ENABLE))
+    Radio::Packet packet = Radio::getPacket();
+    if (GETFLAG(packet.flags, Radio::FLAG_ENABLE))
     {
         if (!enabled)
         {
@@ -74,9 +74,9 @@ void parsePacket()
         }
     }
 
-    if (GETFLAG(packet.flags, FLAG_ACK))
+    if (GETFLAG(packet.flags, Radio::FLAG_ACK))
     {
-        radioSendStatus();
+        Radio::sendStatus();
     }
 
     if (enabled)
