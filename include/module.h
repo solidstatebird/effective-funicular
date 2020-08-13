@@ -15,15 +15,15 @@ const float ENCODER_TICKS_PER_REVOLUTION = 28;
 
 const int MAX_MOTOR_OUTPUT = 255;
 
-const float STEERING_RATIO = (49.0 / 25.0) * (49.0 / 25.0) * (97.0 / 25.0), //motor:module
+const float STEERING_RATIO = (41.0 / 17.0) * (41.0 / 17.0) * (97.0 / 17.0), //motor:module
             WHEEL_RATIO = STEERING_RATIO * (15.0 / 59.0); //motor:wheel
 
 const float WHEEL_CIRCUMFERENCE_IN = PI * 2.5;
 
-const float SPEED_KP = 10,
+const float SPEED_KP = 20,
             SPEED_KI = 0,
             SPEED_KD = 0.0,
-            ANGLE_KP = 110.0,
+            ANGLE_KP = 220.0,
             ANGLE_KI = 0.0,
             ANGLE_KD = 0.0;
 
