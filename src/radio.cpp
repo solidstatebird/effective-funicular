@@ -66,7 +66,7 @@ void processPacket(const void *sender, const uint8_t *buffer, size_t size)
     if (calc_crc != rx_crc)
         return;
 
-    packet.flags = buffer[PACKET_FLAGS_OFFSET];
+    packet.flags = buffer[PACKET_FLAGS_OFFSET] << 8 + buffer[PACKET_FLAGS_OFFSET+1];
     packet.a1 = readFloat(buffer, PACKET_A1_OFFSET);
     packet.a2 = readFloat(buffer, PACKET_A2_OFFSET);
     packet.a3 = readFloat(buffer, PACKET_A3_OFFSET);
