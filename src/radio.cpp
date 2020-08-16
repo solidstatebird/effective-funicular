@@ -36,7 +36,7 @@ void Radio::sendStatus()
     packetInterface.send(data, RESPONSE_PACKET_SIZE);
 }
 
-inline void Radio::update()
+void Radio::update()
 {
     packetInterface.update();
 }
@@ -62,11 +62,11 @@ void processPacket(const void *sender, const uint8_t *buffer, size_t size)
         return;
 
     uint16_t calc_crc = crc16.ccitt(buffer, size - 2);
-    uint16_t rx_crc = (buffer[PACKET_CRC_OFFSET] << 8) + buffer[PACKET_CRC_OFFSET + 1];
+    uint16_t rx_crc = (buffer[PACKET_CRC_OFFSET] << 8) + buffer[PACKET_CRC_OFFSET+1];
     if (calc_crc != rx_crc)
         return;
 
-    packet.flags = buffer[PACKET_FLAGS_OFFSET] << 8 + buffer[PACKET_FLAGS_OFFSET+1];
+    packet.flags = (buffer[PACKET_FLAGS_OFFSET] << 8) + buffer[PACKET_FLAGS_OFFSET+1];
     packet.a1 = readFloat(buffer, PACKET_A1_OFFSET);
     packet.a2 = readFloat(buffer, PACKET_A2_OFFSET);
     packet.a3 = readFloat(buffer, PACKET_A3_OFFSET);
