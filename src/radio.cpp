@@ -21,8 +21,9 @@ void Radio::initialize()
     RADIO_INTERFACE.begin(RADIO_BAUD_RATE);
     packetInterface.setStream(&RADIO_INTERFACE);
     packetInterface.setPacketHandler(&processPacket);
-    digitalWrite(RADIO_SET_PIN, HIGH);
     pinMode(RADIO_SET_PIN, OUTPUT);
+    digitalWrite(RADIO_SET_PIN, HIGH);
+    delay(250);
 }
 
 void Radio::sendStatus()
