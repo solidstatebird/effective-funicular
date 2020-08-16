@@ -74,13 +74,13 @@ private:
 class Module
 {
 public:
-    Module(ModuleID, MotorController *);
+    Module(ModuleID);
     ~Module();
     ModuleID id;
 
-    FastFloatPID *speedControl, *angleControl;
-    Encoder *m1Encoder, *m2Encoder;
     MotorController *moduleController;
+    Encoder *m1Encoder, *m2Encoder;
+    FastFloatPID *speedControl, *angleControl;
 
     void disarm();
     void arm();
@@ -104,7 +104,7 @@ private:
     float measuredWheelPosition, measuredAngle,
         targetWheelPosition, targetAngle,
         PIDspeed, PIDangle,
-        wheelRate = 0;
+        targetSpeed = 0;
 };
 
 #endif

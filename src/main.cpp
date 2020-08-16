@@ -7,17 +7,12 @@
 
 const unsigned long SAFETY_TIMEOUT_MS = 1000;
 
-MotorController module1Conroller(ID_MODULE1),
-    module2Conroller(ID_MODULE2),
-    module3Conroller(ID_MODULE3);
-
-Module module1(ID_MODULE1, &module1Conroller),
-    module2(ID_MODULE2, &module2Conroller),
-    module3(ID_MODULE3, &module3Conroller);
+Module module1(ID_MODULE1),
+    module2(ID_MODULE2),
+    module3(ID_MODULE3);
 
 boolean enabled = false;
 
-void updateDisarmTimer();
 void updateAngles();
 void updateSpeeds();
 void parsePacket();
@@ -51,11 +46,22 @@ void loop()
         module3.setSpeed(b.substring(0, 4).toFloat());
         // module1.setAngle(DEG_TO_RAD * b.substring(5, 8).toFloat());
     }
-    //Radio::update();
-    // if (Radio::packetAvailable())
-    //     parsePacket();
+
     #warning disarm timer diabled
-    //updateDisarmTimer();
+    static unsigned long disableTimer = millis();
+    // if (millis() - disableTimer > SAFETY_TIMEOUT_MS)
+    // {
+    //     module1.disarm();
+    //     module2.disarm();
+    //     module3.disarm();
+    //     enabled = false;
+    // }
+    //Radio::update();
+    if (Radio::packetAvailable())
+    {
+        parsePacket();
+        disableTimer = millis();
+    }
     updateSpeeds();
     updateAngles();
 }
@@ -73,7 +79,14 @@ void parsePacket()
             enabled = true;
         }
     }
-
+    else
+    {
+        module1.disarm();
+        module2.disarm();
+        module3.disarm();
+        enabled = false;
+    }
+    
     if (GETFLAG(packet.flags, Radio::FLAG_ACK))
     {
         Radio::sendStatus();
@@ -137,12 +150,5 @@ void updateMotorOutputs() {
 
 void updateDisarmTimer()
 {
-    static unsigned long disableTimer = millis();
-    if (millis() - disableTimer > SAFETY_TIMEOUT_MS)
-    {
-        module1.disarm();
-        module2.disarm();
-        module3.disarm();
-        enabled = false;
-    }
+    
 }

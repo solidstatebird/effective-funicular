@@ -4,17 +4,18 @@
 
 #include "module.h"
 
-Module::Module(ModuleID id_, MotorController *mc_)
-    : id(id_), moduleController(mc_)
+Module::Module(ModuleID id_)
+    : id(id_),
+    moduleController(new MotorController(id)),
+    m1Encoder(new Encoder(ENCODERPINS[id][0][0], ENCODERPINS[id][0][1])),
+    m2Encoder(new Encoder(ENCODERPINS[id][1][0], ENCODERPINS[id][1][1])),
+    speedControl(new FastFloatPID(&measuredWheelPosition, &PIDspeed, &targetWheelPosition,
+                                    SPEED_KP, SPEED_KI, SPEED_KD, DIRECT)),
+    angleControl(new FastFloatPID(&measuredAngle, &PIDangle, &targetAngle,
+                                    ANGLE_KP, ANGLE_KI, ANGLE_KD, DIRECT)),
+    hallPin(HALLPINS[id])
 {
-    hallPin = HALLPINS[id];
     pinMode(hallPin, INPUT);
-    m1Encoder = new Encoder(ENCODERPINS[id][0][0], ENCODERPINS[id][0][1]);
-    m2Encoder = new Encoder(ENCODERPINS[id][1][0], ENCODERPINS[id][1][1]);
-    speedControl = new FastFloatPID(&measuredWheelPosition, &PIDspeed, &targetWheelPosition,
-                                    SPEED_KP, SPEED_KI, SPEED_KD, DIRECT);
-    angleControl = new FastFloatPID(&measuredAngle, &PIDangle, &targetAngle,
-                                    ANGLE_KP, ANGLE_KI, ANGLE_KD, DIRECT);
     speedControl->SetSampleTime(SPEED_PID_SAMPLE_TIME);
     angleControl->SetSampleTime(ANGLE_PID_SAMPLE_TIME);
     speedControl->SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
@@ -31,6 +32,7 @@ Module::~Module()
 
 void Module::updateAngle()
 {
+    if(!armed) return;
     measuredAngle = (PI * (m1Encoder->read() + m2Encoder->read())) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);
     //the 2 from the radian conversion and the averaging calculation cancel out
     angleControl->Compute();
@@ -38,12 +40,13 @@ void Module::updateAngle()
 
 void Module::updateSpeed()
 {
+    if(!armed) return;
     int32_t ticks1 = m1Encoder->read();
     int32_t ticks2 = m2Encoder->read();
 
     measuredWheelPosition = ticks1 - ticks2;
     
-    targetWheelPosition += wheelRate * SPEED_PID_SAMPLE_TIME ;
+    targetWheelPosition += targetSpeed * SPEED_PID_SAMPLE_TIME ;
 
     speedControl->Compute();
 }
@@ -112,6 +115,7 @@ void Module::disarm()
 {
     angleControl->SetMode(MANUAL);
     speedControl->SetMode(MANUAL);
+    targetSpeed = 0;
     PIDangle = 0;
     PIDspeed = 0;
     moduleController->zero();
@@ -133,7 +137,7 @@ void Module::setAngle(float setpoint)
 
 void Module::setSpeed(float setpoint)
 {
-    wheelRate = setpoint * ((ENCODER_TICKS_PER_REVOLUTION * WHEEL_RATIO) / WHEEL_CIRCUMFERENCE_IN); //in/sec to ticks/sec
+    targetSpeed = setpoint * ((ENCODER_TICKS_PER_REVOLUTION * WHEEL_RATIO) / WHEEL_CIRCUMFERENCE_IN); //in/sec to ticks/sec
 }
 
 MotorController::MotorController(ModuleID id_)
