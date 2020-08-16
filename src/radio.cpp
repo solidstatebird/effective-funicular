@@ -7,8 +7,8 @@
 using namespace Radio;
 
 void processPacket(const void *sender, const uint8_t *, size_t);
-void writeFloat(float, uint8_t, const uint16_t);
-float readFloat(const uint8_t *, const uint16_t);
+void writeFloat(float, uint8_t *, const size_t);
+float readFloat(const uint8_t *, const size_t);
 
 PacketSerial packetInterface;
 Packet packet;
@@ -83,7 +83,7 @@ void processPacket(const void *sender, const uint8_t *buffer, size_t size)
 #endif
 
 //converts little-endian to big-endian
-void writeFloat(float value, uint8_t *data, const uint16_t index)
+void writeFloat(float value, uint8_t *data, size_t index)
 {
     FloatUnion input;
     input.fp = value;
@@ -95,7 +95,7 @@ void writeFloat(float value, uint8_t *data, const uint16_t index)
 }
 
 //converts big-endian to little-endian
-float readFloat(const uint8_t *data, const uint16_t index)
+float readFloat(const uint8_t *data, const size_t index)
 {
     FloatUnion output;
 
