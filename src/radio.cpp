@@ -6,7 +6,7 @@
 
 using namespace Radio;
 
-void processPacket(const void *sender, const uint8_t *, size_t);
+void processPacket(const void *, const uint8_t *, size_t);
 void writeFloat(float, uint8_t *, const size_t);
 float readFloat(const uint8_t *, const size_t);
 
@@ -29,8 +29,9 @@ void Radio::initialize()
 void Radio::sendStatus()
 {
     uint8_t data[RESPONSE_PACKET_SIZE];
-    data[0] = 0;
-    data[1] = 0;
+    uint16_t flags = 0;
+    data[RESPONSE_PACKET_FLAGS_OFFSET] = flags >> 8;;
+    data[RESPONSE_PACKET_FLAGS_OFFSET+1] = flags;
     uint8_t packetcrc = crc8.smbus(data, RESPONSE_PACKET_SIZE - 1);
     data[RESPONSE_PACKET_CRC_OFFSET] = packetcrc;
 
@@ -55,25 +56,25 @@ Packet Radio::getPacket()
 
 //hidden functions
 
-void processPacket(const void *sender, const uint8_t *buffer, size_t size)
+void processPacket(const void *sender, const uint8_t *data, size_t size)
 {
     if (sender != &packetInterface)
         return;
     if (size != PACKET_SIZE)
         return;
 
-    uint16_t calc_crc = crc16.ccitt(buffer, size - 2);
-    uint16_t rx_crc = (buffer[PACKET_CRC_OFFSET] << 8) + buffer[PACKET_CRC_OFFSET+1];
+    uint16_t calc_crc = crc16.ccitt(data, size - 2);
+    uint16_t rx_crc = (data[PACKET_CRC_OFFSET] << 8) + data[PACKET_CRC_OFFSET+1];
     if (calc_crc != rx_crc)
         return;
 
-    packet.flags = (buffer[PACKET_FLAGS_OFFSET] << 8) + buffer[PACKET_FLAGS_OFFSET+1];
-    packet.a1 = readFloat(buffer, PACKET_A1_OFFSET);
-    packet.a2 = readFloat(buffer, PACKET_A2_OFFSET);
-    packet.a3 = readFloat(buffer, PACKET_A3_OFFSET);
-    packet.s1 = readFloat(buffer, PACKET_S1_OFFSET);
-    packet.s2 = readFloat(buffer, PACKET_S2_OFFSET);
-    packet.s3 = readFloat(buffer, PACKET_S3_OFFSET);
+    packet.flags = (data[PACKET_FLAGS_OFFSET] << 8) + data[PACKET_FLAGS_OFFSET+1];
+    packet.a1 = readFloat(data, PACKET_A1_OFFSET);
+    packet.a2 = readFloat(data, PACKET_A2_OFFSET);
+    packet.a3 = readFloat(data, PACKET_A3_OFFSET);
+    packet.s1 = readFloat(data, PACKET_S1_OFFSET);
+    packet.s2 = readFloat(data, PACKET_S2_OFFSET);
+    packet.s3 = readFloat(data, PACKET_S3_OFFSET);
     packet.crc = calc_crc;
 
     newData = true;

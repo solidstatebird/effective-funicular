@@ -19,16 +19,16 @@ namespace Radio
         uint8_t bytes[4];
     } FloatUnion;
 
-    const size_t PACKET_SIZE = 28;
+    const uint8_t PACKET_SIZE = 28;
 
-    const size_t PACKET_FLAGS_OFFSET = 0;
-    const size_t PACKET_A1_OFFSET = 2;
-    const size_t PACKET_A2_OFFSET = 6;
-    const size_t PACKET_A3_OFFSET = 10;
-    const size_t PACKET_S1_OFFSET = 14;
-    const size_t PACKET_S2_OFFSET = 18;
-    const size_t PACKET_S3_OFFSET = 22;
-    const size_t PACKET_CRC_OFFSET = 26;
+    const uint8_t PACKET_FLAGS_OFFSET = 0;
+    const uint8_t PACKET_A1_OFFSET = 2;
+    const uint8_t PACKET_A2_OFFSET = 6;
+    const uint8_t PACKET_A3_OFFSET = 10;
+    const uint8_t PACKET_S1_OFFSET = 14;
+    const uint8_t PACKET_S2_OFFSET = 18;
+    const uint8_t PACKET_S3_OFFSET = 22;
+    const uint8_t PACKET_CRC_OFFSET = 26;
 
     typedef struct
     {
@@ -41,9 +41,10 @@ namespace Radio
     const uint8_t FLAG_ENABLE = 0;
     const uint8_t FLAG_ACK = 1;
 
-    const size_t RESPONSE_PACKET_SIZE = 3;
+    const uint8_t RESPONSE_PACKET_SIZE = 3;
 
-    const size_t RESPONSE_PACKET_CRC_OFFSET = 2;
+    const uint8_t RESPONSE_PACKET_FLAGS_OFFSET = 0;
+    const uint8_t RESPONSE_PACKET_CRC_OFFSET = 2;
 
     typedef struct
     {
