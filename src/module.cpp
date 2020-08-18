@@ -6,49 +6,43 @@
 
 Module::Module(ModuleID id_)
     : id(id_),
-    moduleController(new MotorController(id)),
-    m1Encoder(new Encoder(ENCODERPINS[id][0][0], ENCODERPINS[id][0][1])),
-    m2Encoder(new Encoder(ENCODERPINS[id][1][0], ENCODERPINS[id][1][1])),
-    speedControl(new FastFloatPID(&measuredWheelPosition, &PIDspeed, &targetWheelPosition,
-                                    SPEED_KP, SPEED_KI, SPEED_KD, DIRECT)),
-    angleControl(new FastFloatPID(&measuredAngle, &PIDangle, &targetAngle,
-                                    ANGLE_KP, ANGLE_KI, ANGLE_KD, DIRECT)),
+    moduleController(id),
+    m1Encoder(ENCODERPINS[id][0][0], ENCODERPINS[id][0][1]),
+    m2Encoder(ENCODERPINS[id][1][0], ENCODERPINS[id][1][1]),
+    speedControl(&measuredWheelPosition, &PIDspeed, &targetWheelPosition,
+                                    SPEED_KP, SPEED_KI, SPEED_KD, DIRECT),
+    angleControl(&measuredAngle, &PIDangle, &targetAngle,
+                                    ANGLE_KP, ANGLE_KI, ANGLE_KD, DIRECT),
     hallPin(HALLPINS[id])
 {
     pinMode(hallPin, INPUT);
-    speedControl->SetSampleTime(SPEED_PID_SAMPLE_TIME);
-    angleControl->SetSampleTime(ANGLE_PID_SAMPLE_TIME);
-    speedControl->SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
-    angleControl->SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
+    speedControl.SetSampleTime(SPEED_PID_SAMPLE_TIME);
+    angleControl.SetSampleTime(ANGLE_PID_SAMPLE_TIME);
+    speedControl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
+    angleControl.SetOutputLimits(-MAX_MOTOR_OUTPUT, MAX_MOTOR_OUTPUT);
 }
 
-Module::~Module()
-{
-    delete speedControl;
-    delete angleControl;
-    delete m1Encoder;
-    delete m2Encoder;
-}
+Module::~Module() {}
 
 void Module::updateAngle()
 {
     if(!armed) return;
-    measuredAngle = (PI * (m1Encoder->read() + m2Encoder->read())) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);
+    measuredAngle = (PI * (m1Encoder.read() + m2Encoder.read())) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);
     //the 2 from the radian conversion and the averaging calculation cancel out
-    angleControl->Compute();
+    angleControl.Compute();
 }
 
 void Module::updateSpeed()
 {
     if(!armed) return;
-    int32_t ticks1 = m1Encoder->read();
-    int32_t ticks2 = m2Encoder->read();
+    int32_t ticks1 = m1Encoder.read();
+    int32_t ticks2 = m2Encoder.read();
 
     measuredWheelPosition = ticks1 - ticks2;
     
     targetWheelPosition += targetSpeed * SPEED_PID_SAMPLE_TIME ;
 
-    speedControl->Compute();
+    speedControl.Compute();
 }
 
 boolean Module::home()
@@ -61,20 +55,20 @@ boolean Module::home()
 
     while (1)
     {
-        moduleController->setOutput(30, 30);
+        moduleController.setOutput(30, 30);
 
         if (analogRead(hallPin) < MAGNET_THRESHOLDS[id])
         {
-            moduleController->setOutput(0, 0);
-            m1Encoder->write(0);
-            m2Encoder->write(0);
+            moduleController.setOutput(0, 0);
+            m1Encoder.write(0);
+            m2Encoder.write(0);
             return true;
         }
         if (millis() - startTime > 3000)
         {
-            moduleController->setOutput(0, 0);
-            m1Encoder->write(0);
-            m2Encoder->write(0);
+            moduleController.setOutput(0, 0);
+            m1Encoder.write(0);
+            m2Encoder.write(0);
             return false;
         }
     }
@@ -83,7 +77,7 @@ boolean Module::home()
 void Module::updateMotorController(int max)
 {
     if(!armed) {
-        moduleController->zero();
+        moduleController.zero();
         return;
     }
     
@@ -94,7 +88,7 @@ void Module::updateMotorController(int max)
     m1 += PIDangle;
     m2 += PIDangle;
 
-    moduleController->setOutput((int)(MAX_MOTOR_OUTPUT * (m1 / max)),
+    moduleController.setOutput((int)(MAX_MOTOR_OUTPUT * (m1 / max)),
                                 (int)(MAX_MOTOR_OUTPUT * (m2 / max)));
 }
 
@@ -113,20 +107,20 @@ int Module::getMaxOutput()
 
 void Module::disarm()
 {
-    angleControl->SetMode(MANUAL);
-    speedControl->SetMode(MANUAL);
+    angleControl.SetMode(MANUAL);
+    speedControl.SetMode(MANUAL);
     targetSpeed = 0;
     PIDangle = 0;
     PIDspeed = 0;
-    moduleController->zero();
+    moduleController.zero();
     armed = false;
 }
 
 void Module::arm()
 {
 
-    angleControl->SetMode(AUTOMATIC);
-    speedControl->SetMode(AUTOMATIC);
+    angleControl.SetMode(AUTOMATIC);
+    speedControl.SetMode(AUTOMATIC);
     armed = true;
 }
 

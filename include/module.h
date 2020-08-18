@@ -78,9 +78,9 @@ public:
     ~Module();
     ModuleID id;
 
-    MotorController *moduleController;
-    Encoder *m1Encoder, *m2Encoder;
-    FastFloatPID *speedControl, *angleControl;
+    MotorController moduleController;
+    Encoder m1Encoder, m2Encoder;
+    FastFloatPID speedControl, angleControl;
 
     void disarm();
     void arm();
