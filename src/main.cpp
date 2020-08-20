@@ -142,7 +142,7 @@ void updateMotorOutputs() {
     if (x < z)
         x = z;
     if (x <= MAX_MOTOR_OUTPUT)
-        x = 255;
+        x = MAX_MOTOR_OUTPUT;
     module1.updateMotorController(x);
     module2.updateMotorController(x);
     module3.updateMotorController(x);
