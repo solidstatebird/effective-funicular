@@ -6,6 +6,7 @@
 //#include "util.h"
 
 const unsigned long SAFETY_TIMEOUT_MS = 1000;
+unsigned long disableTimer = 0;
 
 Module module1(ID_MODULE1),
     module2(ID_MODULE2),
@@ -15,6 +16,7 @@ boolean enabled = false;
 
 void updateAngles();
 void updateSpeeds();
+void updateDisarmTimer();
 void parsePacket();
 void updateMotorOutputs();
 
@@ -46,17 +48,8 @@ void loop()
         module3.setSpeed(b.substring(0, 4).toFloat());
         // module1.setAngle(DEG_TO_RAD * b.substring(5, 8).toFloat());
     }
-
-    #warning disarm timer diabled
-    static unsigned long disableTimer = millis();
-    // if (millis() - disableTimer > SAFETY_TIMEOUT_MS)
-    // {
-    //     module1.disarm();
-    //     module2.disarm();
-    //     module3.disarm();
-    //     enabled = false;
-    // }
-    //Radio::update();
+    
+    Radio::update();
     if (Radio::packetAvailable())
     {
         parsePacket();
@@ -64,11 +57,13 @@ void loop()
     }
     updateSpeeds();
     updateAngles();
+    #warning disarm timer diabled
+    //updateDisarmTimer();
 }
 
 void parsePacket()
 {
-    Radio::Packet packet = Radio::getPacket();
+    Radio::Packet packet = Radio::getLastPacket();
     if (GETFLAG(packet.flags, Radio::FLAG_ENABLE))
     {
         if (!enabled)
@@ -89,7 +84,8 @@ void parsePacket()
     
     if (GETFLAG(packet.flags, Radio::FLAG_ACK))
     {
-        Radio::sendStatus();
+        uint16_t responseFlags = 0;
+        Radio::sendStatus(responseFlags);
     }
 
     if (enabled)
@@ -133,7 +129,8 @@ void updateSpeeds()
     }
 }
 
-void updateMotorOutputs() {
+void updateMotorOutputs()
+{
     int x = abs(module1.getMaxOutput());
     int y = abs(module2.getMaxOutput());
     int z = abs(module3.getMaxOutput());
@@ -150,5 +147,11 @@ void updateMotorOutputs() {
 
 void updateDisarmTimer()
 {
-    
+    if (millis() - disableTimer > SAFETY_TIMEOUT_MS)
+    {
+        module1.disarm();
+        module2.disarm();
+        module3.disarm();
+        enabled = false;
+    }
 }

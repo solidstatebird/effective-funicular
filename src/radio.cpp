@@ -6,9 +6,9 @@
 
 using namespace Radio;
 
-void processPacket(const void *, const uint8_t *, size_t);
-void writeFloat(float, uint8_t *, const size_t);
-float readFloat(const uint8_t *, const size_t);
+void packetHandler(const void *, const uint8_t *, size_t);
+void writeFloat(float, uint8_t *, size_t);
+float readFloat(const uint8_t *, size_t);
 
 PacketSerial packetInterface;
 Packet packet;
@@ -20,18 +20,17 @@ void Radio::initialize()
 {
     RADIO_INTERFACE.begin(RADIO_BAUD_RATE);
     packetInterface.setStream(&RADIO_INTERFACE);
-    packetInterface.setPacketHandler(&processPacket);
+    packetInterface.setPacketHandler(&packetHandler);
     pinMode(RADIO_SET_PIN, OUTPUT);
     digitalWrite(RADIO_SET_PIN, HIGH);
     delay(250);
 }
 
-void Radio::sendStatus()
+void Radio::sendStatus(uint16_t flags)
 {
     uint8_t data[RESPONSE_PACKET_SIZE];
-    uint16_t flags = 0;
-    data[RESPONSE_PACKET_FLAGS_OFFSET] = flags >> 8;;
-    data[RESPONSE_PACKET_FLAGS_OFFSET+1] = flags;
+    data[RESPONSE_PACKET_FLAGS_OFFSET] = flags >> 8;
+    data[RESPONSE_PACKET_FLAGS_OFFSET + 1] = flags;
     uint8_t packetcrc = crc8.smbus(data, RESPONSE_PACKET_SIZE - 1);
     data[RESPONSE_PACKET_CRC_OFFSET] = packetcrc;
 
@@ -48,7 +47,7 @@ boolean Radio::packetAvailable()
     return newData;
 }
 
-Packet Radio::getPacket()
+Packet Radio::getLastPacket()
 {
     newData = false;
     return packet;
@@ -56,7 +55,7 @@ Packet Radio::getPacket()
 
 //hidden functions
 
-void processPacket(const void *sender, const uint8_t *data, size_t size)
+void packetHandler(const void *sender, const uint8_t *data, size_t size)
 {
     if (sender != &packetInterface)
         return;
@@ -97,7 +96,7 @@ void writeFloat(float value, uint8_t *data, size_t index)
 }
 
 //converts big-endian to little-endian
-float readFloat(const uint8_t *data, const size_t index)
+float readFloat(const uint8_t *data, size_t index)
 {
     FloatUnion output;
 

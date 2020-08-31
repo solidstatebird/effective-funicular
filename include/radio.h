@@ -15,9 +15,9 @@ namespace Radio
 
     void initialize();
     void update();
-    void sendStatus();
+    void sendStatus(uint16_t);
     boolean packetAvailable();
-    Packet getPacket();
+    Packet getLastPacket();
 
 } // namespace Radio
 
