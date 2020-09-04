@@ -27,9 +27,8 @@ void setup()
 
     Radio::initialize();
 
-    // module1.home();
-    // module2.home();
-    // module3.home();
+    // if (!module1.home() || !module2.home() || !module3.home())
+    //     while (1);
 
     // module1.arm();
     // module2.arm();
@@ -48,7 +47,7 @@ void loop()
         module3.setSpeed(b.substring(0, 4).toFloat());
         // module1.setAngle(DEG_TO_RAD * b.substring(5, 8).toFloat());
     }
-    
+
     Radio::update();
     if (Radio::packetAvailable())
     {
@@ -57,7 +56,7 @@ void loop()
     }
     updateSpeeds();
     updateAngles();
-    #warning disarm timer diabled
+#warning disarm timer diabled
     //updateDisarmTimer();
 }
 
@@ -81,7 +80,7 @@ void parsePacket()
         module3.disarm();
         enabled = false;
     }
-    
+
     if (GETFLAG(packet.flags, Radio::FLAG_ACK))
     {
         uint16_t responseFlags = 0;
@@ -93,9 +92,9 @@ void parsePacket()
         module1.setSpeed(packet.s1);
         module2.setSpeed(packet.s2);
         module3.setSpeed(packet.s3);
-        module1.setAngle(packet.s1);
-        module2.setAngle(packet.s2);
-        module3.setAngle(packet.s3);
+        module1.setAngle(packet.a1);
+        module2.setAngle(packet.a2);
+        module3.setAngle(packet.a3);
     }
 }
 
