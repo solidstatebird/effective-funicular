@@ -30,6 +30,9 @@ const float SPEED_KP = 20.0,
 
 //module   1, 2, 3
 
+const float MODULE_OFFSETS[] = {0.0 * DEG_TO_RAD, 120.0 * DEG_TO_RAD, 240.0 * DEG_TO_RAD};
+
+const uint8_t HALLPINS[] = {A22, A21, A20};
 const int MAGNET_THRESHOLDS[] = {25, 50, 200};
 
 //////////////////////////////// PINS ////////////////////////////////
@@ -37,17 +40,14 @@ const int MAGNET_THRESHOLDS[] = {25, 50, 200};
 //           <module 1> <module 2> <module 3>
 //             m1, m2     m1, m2     m1, m2
 
-const uint8_t DIRPINS[3][2] = {{21, 20}, {31, 32}, {5, 6}};
-const uint8_t PWMPINS[3][2] = {{23, 22}, {29, 30}, {3, 4}};
-
-const uint8_t HALLPINS[] = {A15, A14, A16};
+const uint8_t DIRPINS[3][2] = {{23, 21}, {29, 31}, {3, 5}};
+const uint8_t PWMPINS[3][2] = {{22, 20}, {30, 32}, {4, 6}};
 
 //           <module 1>      <module 2>       <module 3>
 //          <m1>    <m2>    <m1>    <m2>     <m1>    <m2>
 //          A,B      A,B    A,B      A,B     A,B      A,B
 
-const uint8_t ENCODERPINS[3][2][2] = {{{19, 18}, {17, 16}}, {{25, 26}, {27, 28}}, {{7, 8}, {9, 10}}};
-
+const uint8_t ENCODERPINS[3][2][2] = {{{16, 18}, {17, 19}}, {{28, 26}, {27, 25}}, {{10, 8}, {9, 7}}};
 
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////

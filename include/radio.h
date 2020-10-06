@@ -9,9 +9,9 @@
 
 namespace Radio
 {
-    #define RADIO_INTERFACE Serial1
+    #define RADIO_INTERFACE Serial5
     const int RADIO_BAUD_RATE = 115200;
-    const uint8_t RADIO_SET_PIN = 2;
+    const uint8_t RADIO_SET_PIN = 35;
 
     void initialize();
     void update();
