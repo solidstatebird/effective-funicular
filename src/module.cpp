@@ -55,16 +55,16 @@ boolean Module::home()
 
     while (1)
     {
-        moduleController.setOutput(30, 30);
+        moduleController.setOutput(40, 40);
 
-        if (analogRead(hallPin) < MAGNET_THRESHOLDS[id])
+        if (analogRead(hallPin) > MAGNET_THRESHOLDS[id])
         {
             moduleController.setOutput(0, 0);
             m1Encoder.write(0);
             m2Encoder.write(0);
             return true;
         }
-        if (millis() - startTime > 3000)
+        if (millis() - startTime > 5000)
         {
             moduleController.setOutput(0, 0);
             m1Encoder.write(0);

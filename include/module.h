@@ -32,8 +32,8 @@ const float SPEED_KP = 20.0,
 
 const float MODULE_OFFSETS[] = {0.0 * DEG_TO_RAD, 120.0 * DEG_TO_RAD, 240.0 * DEG_TO_RAD};
 
-const uint8_t HALLPINS[] = {A22, A21, A20};
-const int MAGNET_THRESHOLDS[] = {25, 50, 200};
+const uint8_t HALLPINS[] = {A20, A21, A22};
+const int MAGNET_THRESHOLDS[] = {410, 385, 410};
 
 //////////////////////////////// PINS ////////////////////////////////
 
