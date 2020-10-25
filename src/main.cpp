@@ -25,14 +25,29 @@ void setup()
     Serial.begin(2000000);
     Serial.setTimeout(10000);
 
+    pinMode(LED_BUILTIN, OUTPUT);
+    analogWrite(LED_BUILTIN, 255);
+
     Radio::initialize();
 
-    // if (!module1.home() || !module2.home() || !module3.home())
-    //     while (1);
+    if (!module1.home() || !module2.home() || !module3.home())
+        while (1);
 
-    // module1.arm();
-    // module2.arm();
-    // module3.arm();
+    module1.arm();
+    module2.arm();
+    module3.arm();
+    module1.setAngle(0);
+    module2.setAngle(0);
+    module3.setAngle(0);
+
+    unsigned long now = millis();
+    while(millis() - now < 1000)
+    {
+       updateSpeeds();
+       updateAngles(); 
+    }
+
+
 }
 
 void loop()
@@ -44,9 +59,14 @@ void loop()
     if (Serial.available() > 6)
     {
         String b = Serial.readStringUntil('\n');
+        module1.setSpeed(b.substring(0, 4).toFloat());
+        module1.setAngle(DEG_TO_RAD * b.substring(5, 8).toFloat());
+        module2.setSpeed(b.substring(0, 4).toFloat());
+        module2.setAngle(DEG_TO_RAD * b.substring(5, 8).toFloat());
         module3.setSpeed(b.substring(0, 4).toFloat());
-        // module1.setAngle(DEG_TO_RAD * b.substring(5, 8).toFloat());
+        module3.setAngle(DEG_TO_RAD * b.substring(5, 8).toFloat());
     }
+
 
     Radio::update();
     if (Radio::packetAvailable())

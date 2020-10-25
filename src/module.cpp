@@ -126,12 +126,13 @@ void Module::arm()
 
 void Module::setAngle(float setpoint)
 {
-    targetAngle = setpoint;
+    targetAngle = setpoint + MODULE_OFFSETS[id];
 }
 
 void Module::setSpeed(float setpoint)
 {
     targetSpeed = setpoint * ((ENCODER_TICKS_PER_REVOLUTION * WHEEL_RATIO) / WHEEL_CIRCUMFERENCE_IN); //in/sec to ticks/sec
+    targetSpeed *= MODULE_DIRECTIONS[id];
 }
 
 MotorController::MotorController(ModuleID id_)

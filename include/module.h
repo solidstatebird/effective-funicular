@@ -30,7 +30,8 @@ const float SPEED_KP = 20.0,
 
 //module   1, 2, 3
 
-const float MODULE_OFFSETS[] = {0.0 * DEG_TO_RAD, 120.0 * DEG_TO_RAD, 240.0 * DEG_TO_RAD};
+const float MODULE_OFFSETS[] = {0.0 * DEG_TO_RAD, 120.0 * DEG_TO_RAD, -120.0 * DEG_TO_RAD};
+const int_fast8_t MODULE_DIRECTIONS[] = {1, 1, -1};
 
 const uint8_t HALLPINS[] = {A20, A21, A22};
 const int MAGNET_THRESHOLDS[] = {410, 385, 410};
@@ -40,8 +41,8 @@ const int MAGNET_THRESHOLDS[] = {410, 385, 410};
 //           <module 1> <module 2> <module 3>
 //             m1, m2     m1, m2     m1, m2
 
-const uint8_t DIRPINS[3][2] = {{23, 21}, {29, 31}, {3, 5}};
-const uint8_t PWMPINS[3][2] = {{22, 20}, {30, 32}, {4, 6}};
+const uint8_t DIRPINS[3][2] = {{23, 21}, {32, 31}, {3, 5}};
+const uint8_t PWMPINS[3][2] = {{22, 20}, {30, 29}, {4, 6}};
 
 //           <module 1>      <module 2>       <module 3>
 //          <m1>    <m2>    <m1>    <m2>     <m1>    <m2>
@@ -102,7 +103,7 @@ public:
 private:
     boolean armed = false;
 
-    uint8_t hallPin;
+    const uint8_t hallPin;
 
     float measuredWheelPosition, measuredAngle,
         targetWheelPosition, targetAngle,
