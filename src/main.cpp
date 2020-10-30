@@ -32,13 +32,6 @@ void setup()
 
     Radio::initialize();
 
-    module1.arm();
-    module2.arm();
-    module3.arm();
-    module1.setAngle(0);
-    module2.setAngle(0);
-    module3.setAngle(0);
-
     unsigned long now = millis();
     while(millis() - now < 1000)
     {
