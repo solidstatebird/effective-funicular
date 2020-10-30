@@ -47,15 +47,15 @@ void Module::updateSpeed()
 
 boolean Module::home()
 {
-    if (armed)
-        disarm();
+    disarm();
+    targetSpeed = 0;
     targetAngle = 0;
 
     unsigned long startTime = millis();
 
     while (1)
     {
-        moduleController.setOutput(40, 40);
+        moduleController.setOutput(80, 80);
 
         if (analogRead(hallPin) > MAGNET_THRESHOLDS[id])
         {
@@ -64,7 +64,7 @@ boolean Module::home()
             m2Encoder.write(0);
             return true;
         }
-        if (millis() - startTime > 5000)
+        if (millis() - startTime > 3000)
         {
             moduleController.setOutput(0, 0);
             m1Encoder.write(0);

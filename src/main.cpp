@@ -13,6 +13,8 @@ Module module1(ID_MODULE1),
     module3(ID_MODULE3);
 
 boolean enabled = false;
+boolean connected = false;
+boolean homeError = false;
 
 void updateAngles();
 void updateSpeeds();
@@ -29,9 +31,6 @@ void setup()
     analogWrite(LED_BUILTIN, 255);
 
     Radio::initialize();
-
-    if (!module1.home() || !module2.home() || !module3.home())
-        while (1);
 
     module1.arm();
     module2.arm();
@@ -83,6 +82,24 @@ void loop()
 void parsePacket()
 {
     Radio::Packet packet = Radio::getLastPacket();
+
+    if(homeError)
+    {
+        uint16_t responseFlags = 0;
+        SETFLAG(responseFlags, Radio::RESPONSE_FLAG_HOME_ERROR);
+        Radio::sendStatus(responseFlags);
+    }
+
+    if(!connected)
+    {
+        uint16_t responseFlags = 0;
+        SETFLAG(responseFlags, Radio::RESPONSE_FLAG_BUSY);
+        Radio::sendStatus(responseFlags);
+        if (!module1.home() || !module2.home() || !module3.home())
+            homeError = true;
+        connected = true;
+    }
+
     if (GETFLAG(packet.flags, Radio::FLAG_ENABLE))
     {
         if (!enabled)
@@ -101,11 +118,8 @@ void parsePacket()
         enabled = false;
     }
 
-    if (GETFLAG(packet.flags, Radio::FLAG_ACK))
-    {
         uint16_t responseFlags = 0;
         Radio::sendStatus(responseFlags);
-    }
 
     if (enabled)
     {
@@ -172,5 +186,6 @@ void updateDisarmTimer()
         module2.disarm();
         module3.disarm();
         enabled = false;
+        connected = false;
     }
 }
