@@ -68,8 +68,8 @@ void loop()
     }
     updateSpeeds();
     updateAngles();
-#warning disarm timer diabled
-    //updateDisarmTimer();
+    //#warning disarm timer diabled
+    updateDisarmTimer();
 }
 
 void parsePacket()
