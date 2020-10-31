@@ -24,6 +24,7 @@ void updateMotorOutputs();
 
 void setup()
 {
+
     Serial.begin(2000000);
     Serial.setTimeout(10000);
 
@@ -88,8 +89,11 @@ void parsePacket()
         uint16_t responseFlags = 0;
         SETFLAG(responseFlags, Radio::RESPONSE_FLAG_BUSY);
         Radio::sendStatus(responseFlags);
+        unsigned long now = millis();
         if (!module1.home() || !module2.home() || !module3.home())
             homeError = true;
+        if(millis() - now < 9000)
+        delay(9000 - (millis() - now)); 
         connected = true;
     }
 
