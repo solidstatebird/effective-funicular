@@ -14,7 +14,6 @@ Module module1(ID_MODULE1),
 
 boolean enabled = false;
 boolean connected = false;
-boolean homeError = false;
 
 void updateAngles();
 void updateSpeeds();
@@ -77,13 +76,6 @@ void parsePacket()
 {
     Radio::Packet packet = Radio::getLastPacket();
 
-    if(homeError)
-    {
-        uint16_t responseFlags = 0;
-        SETFLAG(responseFlags, Radio::RESPONSE_FLAG_HOME_ERROR);
-        Radio::sendStatus(responseFlags);
-    }
-
     if(!connected)
     {
         uint16_t responseFlags = 0;
@@ -91,10 +83,12 @@ void parsePacket()
         Radio::sendStatus(responseFlags);
         unsigned long now = millis();
         if (!module1.home() || !module2.home() || !module3.home())
-            homeError = true;
+            connected = true;
+        else
+            connected = false;
+        
         if(millis() - now < 9000)
         delay(9000 - (millis() - now)); 
-        connected = true;
     }
 
     if (GETFLAG(packet.flags, Radio::FLAG_ENABLE))
