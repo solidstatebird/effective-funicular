@@ -23,12 +23,13 @@ void updateMotorOutputs();
 
 void setup()
 {
-
-    Serial.begin(2000000);
-    Serial.setTimeout(10000);
+    
+    // module1.home();
+    // module2.home();
+    // module3.home();
 
     pinMode(LED_BUILTIN, OUTPUT);
-    analogWrite(LED_BUILTIN, 255);
+    digitalWrite(LED_BUILTIN, HIGH);
 
     Radio::initialize();
 
@@ -81,14 +82,10 @@ void parsePacket()
         uint16_t responseFlags = 0;
         SETFLAG(responseFlags, Radio::RESPONSE_FLAG_BUSY);
         Radio::sendStatus(responseFlags);
-        unsigned long now = millis();
         if (!module1.home() || !module2.home() || !module3.home())
-            connected = true;
-        else
             connected = false;
-        
-        if(millis() - now < 9000)
-        delay(9000 - (millis() - now)); 
+        else
+            connected = true;
     }
 
     if (GETFLAG(packet.flags, Radio::FLAG_ENABLE))
@@ -109,8 +106,8 @@ void parsePacket()
         enabled = false;
     }
 
-        uint16_t responseFlags = 0;
-        Radio::sendStatus(responseFlags);
+    uint16_t responseFlags = 0;
+    Radio::sendStatus(responseFlags);
 
     if (enabled)
     {
