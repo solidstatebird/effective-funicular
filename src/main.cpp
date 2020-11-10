@@ -79,9 +79,9 @@ void parsePacket()
 
     if(!connected)
     {
-        uint16_t responseFlags = 0;
-        SETFLAG(responseFlags, Radio::RESPONSE_FLAG_BUSY);
-        Radio::sendStatus(responseFlags);
+         Radio::ResponsePacket response = {};
+        SETFLAG(response.flags, Radio::RESPONSE_FLAG_BUSY);
+        Radio::sendStatus(response);
         if (!module1.home() || !module2.home() || !module3.home())
             connected = false;
         else
@@ -106,8 +106,11 @@ void parsePacket()
         enabled = false;
     }
 
-    uint16_t responseFlags = 0;
-    Radio::sendStatus(responseFlags);
+    Radio::ResponsePacket response = {};
+    //placeholders
+    response.angle = 0;
+    response.flags = 0;
+    Radio::sendStatus(response);
 
     if (enabled)
     {

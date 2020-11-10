@@ -11,7 +11,7 @@ void writeFloat(float, uint8_t *, size_t);
 float readFloat(const uint8_t *, size_t);
 
 PacketSerial packetInterface;
-Packet packet;
+Packet currentPacket;
 FastCRC16 crc16;
 FastCRC8 crc8;
 boolean newData = false;
@@ -26,11 +26,12 @@ void Radio::initialize()
     delay(250);
 }
 
-void Radio::sendStatus(uint16_t flags)
+void Radio::sendStatus(ResponsePacket outgoing)
 {
     uint8_t data[RESPONSE_PACKET_SIZE];
-    data[RESPONSE_PACKET_FLAGS_OFFSET] = flags >> 8;
-    data[RESPONSE_PACKET_FLAGS_OFFSET + 1] = flags;
+    data[RESPONSE_PACKET_FLAGS_OFFSET] = outgoing.flags >> 8;
+    data[RESPONSE_PACKET_FLAGS_OFFSET + 1] = outgoing.flags;
+    writeFloat(outgoing.angle, data, RESPONSE_PACKET_ANGLE_OFFSET);
     uint8_t packetcrc = crc8.smbus(data, RESPONSE_PACKET_SIZE - 1);
     data[RESPONSE_PACKET_CRC_OFFSET] = packetcrc;
 
@@ -50,7 +51,7 @@ boolean Radio::packetAvailable()
 Packet Radio::getLastPacket()
 {
     newData = false;
-    return packet;
+    return currentPacket;
 }
 
 //hidden functions
@@ -67,14 +68,14 @@ void packetHandler(const void *sender, const uint8_t *data, size_t size)
     if (calc_crc != rx_crc)
         return;
 
-    packet.flags = (data[PACKET_FLAGS_OFFSET] << 8) + data[PACKET_FLAGS_OFFSET+1];
-    packet.a1 = readFloat(data, PACKET_A1_OFFSET);
-    packet.a2 = readFloat(data, PACKET_A2_OFFSET);
-    packet.a3 = readFloat(data, PACKET_A3_OFFSET);
-    packet.s1 = readFloat(data, PACKET_S1_OFFSET);
-    packet.s2 = readFloat(data, PACKET_S2_OFFSET);
-    packet.s3 = readFloat(data, PACKET_S3_OFFSET);
-    packet.crc = calc_crc;
+    currentPacket.flags = (data[PACKET_FLAGS_OFFSET] << 8) + data[PACKET_FLAGS_OFFSET+1];
+    currentPacket.a1 = readFloat(data, PACKET_A1_OFFSET);
+    currentPacket.a2 = readFloat(data, PACKET_A2_OFFSET);
+    currentPacket.a3 = readFloat(data, PACKET_A3_OFFSET);
+    currentPacket.s1 = readFloat(data, PACKET_S1_OFFSET);
+    currentPacket.s2 = readFloat(data, PACKET_S2_OFFSET);
+    currentPacket.s3 = readFloat(data, PACKET_S3_OFFSET);
+    currentPacket.crc = calc_crc;
 
     newData = true;
 }
