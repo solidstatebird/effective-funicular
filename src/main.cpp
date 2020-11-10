@@ -23,44 +23,14 @@ void updateMotorOutputs();
 
 void setup()
 {
-    
-    // module1.home();
-    // module2.home();
-    // module3.home();
-
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
 
     Radio::initialize();
-
-    unsigned long now = millis();
-    while(millis() - now < 1000)
-    {
-       updateSpeeds();
-       updateAngles(); 
-    }
-
-
 }
 
 void loop()
 {
-    // Serial.print(analogRead(HALLPINS[ID_MODULE1])); Serial.print("  ");
-    // Serial.print(analogRead(HALLPINS[ID_MODULE2])); Serial.print("  ");
-    // Serial.println(analogRead(HALLPINS[ID_MODULE3]));
-
-    if (Serial.available() > 6)
-    {
-        String b = Serial.readStringUntil('\n');
-        module1.setSpeed(b.substring(0, 4).toFloat());
-        module1.setAngle(DEG_TO_RAD * b.substring(5, 8).toFloat());
-        module2.setSpeed(b.substring(0, 4).toFloat());
-        module2.setAngle(DEG_TO_RAD * b.substring(5, 8).toFloat());
-        module3.setSpeed(b.substring(0, 4).toFloat());
-        module3.setAngle(DEG_TO_RAD * b.substring(5, 8).toFloat());
-    }
-
-
     Radio::update();
     if (Radio::packetAvailable())
     {
