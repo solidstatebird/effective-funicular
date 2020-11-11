@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <MPU6050.h>
 
 #include "radio.h"
 #include "module.h"
@@ -11,6 +12,7 @@ unsigned long disableTimer = 0;
 Module module1(ID_MODULE1),
     module2(ID_MODULE2),
     module3(ID_MODULE3);
+MPU6050 mpu;
 
 boolean enabled = false;
 boolean connected = false;
@@ -25,6 +27,33 @@ void setup()
 {
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
+
+    mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G);
+    mpu.calibrateGyro();
+    mpu.setThreshold(3);
+
+
+    while(1)
+    {
+        float pitch, roll, yaw;
+        const float gyroTimeStep = 0.01;
+        // Read normalized values
+        Vector norm = mpu.readNormalizeGyro();
+
+        // Calculate Pitch, Roll and Yaw
+        pitch = pitch + norm.YAxis * gyroTimeStep;
+        roll = roll + norm.XAxis * gyroTimeStep;
+        yaw = yaw + norm.ZAxis * gyroTimeStep;
+
+        // Output raw
+        Serial.print(" Pitch = ");
+        Serial.print(pitch);
+        Serial.print(" Roll = ");
+        Serial.print(roll);  
+        Serial.print(" Yaw = ");
+        Serial.println(yaw);
+        delay(1000 * gyroTimeStep);
+    }
 
     Radio::initialize();
 }

@@ -34,7 +34,7 @@ bool MPU6050::begin(mpu6050_dps_t scale, mpu6050_range_t range, int mpua)
     // Set Address
     mpuAddress = mpua;
 
-    Wire.begin();
+    Wire.begin(I2C_MASTER, 0x00, I2C_PINS_37_38, I2C_PULLUP_EXT, 100000);
 
     // Reset calibrate values
     dg.XAxis = 0;
