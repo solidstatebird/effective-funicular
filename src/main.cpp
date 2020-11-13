@@ -28,15 +28,39 @@ void setup()
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
 
-    mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G);
-    mpu.calibrateGyro();
-    mpu.setThreshold(3);
+    Serial.begin(115200);
 
+    mpu.begin(MPU6050_SCALE_500DPS, MPU6050_RANGE_2G);
+    mpu.calibrateGyro();
+    mpu.setThreshold(0);
 
     while(1)
     {
         float pitch, roll, yaw;
-        const float gyroTimeStep = 0.01;
+        const float gyroTimeStep = 0.1;
+
+        // Vector rawGyro = mpu.readRawGyro();
+        // Vector normGyro = mpu.readNormalizeGyro();
+        
+        // Serial.print(" Xraw = ");
+        // Serial.print(rawGyro.XAxis);
+        // Serial.print(" Yraw = ");
+        // Serial.print(rawGyro.YAxis);
+        // Serial.print(" Zraw = ");
+        // Serial.println(rawGyro.ZAxis);
+        
+        // Serial.print(" Xnorm = ");
+        // Serial.print(normGyro.XAxis);
+        // Serial.print(" Ynorm = ");
+        // Serial.print(normGyro.YAxis);
+        // Serial.print(" Znorm = ");
+        // Serial.println(normGyro.ZAxis);
+        
+        // delay(10);
+
+
+
+
         // Read normalized values
         Vector norm = mpu.readNormalizeGyro();
 
@@ -52,7 +76,7 @@ void setup()
         Serial.print(roll);  
         Serial.print(" Yaw = ");
         Serial.println(yaw);
-        delay(1000 * gyroTimeStep);
+        delay(100);
     }
 
     Radio::initialize();
