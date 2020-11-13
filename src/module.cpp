@@ -124,7 +124,7 @@ void Module::arm()
     armed = true;
 }
 
-void Module::setAngle(float setpoint)
+void Module::setAngle(float setpoint) //radians
 {
     targetAngle = setpoint + MODULE_OFFSETS[id];
 }

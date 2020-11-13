@@ -6,8 +6,8 @@
 
 //#include "util.h"
 
+const float GYRO_SAMPLE_TIME = 0.01;
 const unsigned long SAFETY_TIMEOUT_MS = 1000;
-unsigned long disableTimer = 0;
 
 Module module1(ID_MODULE1),
     module2(ID_MODULE2),
@@ -17,8 +17,14 @@ MPU6050 mpu;
 boolean enabled = false;
 boolean connected = false;
 
+unsigned long disableTimer = 0;
+
+float botAngle = 0.0; //degrees
+
 void updateAngles();
+void updateGyro();
 void updateSpeeds();
+void blinky();
 void updateDisarmTimer();
 void parsePacket();
 void updateMotorOutputs();
@@ -28,56 +34,10 @@ void setup()
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
 
-    Serial.begin(115200);
-
     mpu.begin(MPU6050_SCALE_500DPS, MPU6050_RANGE_2G);
+    delay(500);
     mpu.calibrateGyro();
     mpu.setThreshold(0);
-
-    while(1)
-    {
-        float pitch, roll, yaw;
-        const float gyroTimeStep = 0.1;
-
-        // Vector rawGyro = mpu.readRawGyro();
-        // Vector normGyro = mpu.readNormalizeGyro();
-        
-        // Serial.print(" Xraw = ");
-        // Serial.print(rawGyro.XAxis);
-        // Serial.print(" Yraw = ");
-        // Serial.print(rawGyro.YAxis);
-        // Serial.print(" Zraw = ");
-        // Serial.println(rawGyro.ZAxis);
-        
-        // Serial.print(" Xnorm = ");
-        // Serial.print(normGyro.XAxis);
-        // Serial.print(" Ynorm = ");
-        // Serial.print(normGyro.YAxis);
-        // Serial.print(" Znorm = ");
-        // Serial.println(normGyro.ZAxis);
-        
-        // delay(10);
-
-
-
-
-        // Read normalized values
-        Vector norm = mpu.readNormalizeGyro();
-
-        // Calculate Pitch, Roll and Yaw
-        pitch = pitch + norm.YAxis * gyroTimeStep;
-        roll = roll + norm.XAxis * gyroTimeStep;
-        yaw = yaw + norm.ZAxis * gyroTimeStep;
-
-        // Output raw
-        Serial.print(" Pitch = ");
-        Serial.print(pitch);
-        Serial.print(" Roll = ");
-        Serial.print(roll);  
-        Serial.print(" Yaw = ");
-        Serial.println(yaw);
-        delay(100);
-    }
 
     Radio::initialize();
 }
@@ -90,9 +50,10 @@ void loop()
         parsePacket();
         disableTimer = millis();
     }
+    updateGyro();
+    blinky();
     updateSpeeds();
     updateAngles();
-    //#warning disarm timer diabled
     updateDisarmTimer();
 }
 
@@ -102,13 +63,16 @@ void parsePacket()
 
     if(!connected)
     {
-         Radio::ResponsePacket response = {};
+        Radio::ResponsePacket response = {};
         SETFLAG(response.flags, Radio::RESPONSE_FLAG_BUSY);
         Radio::sendStatus(response);
         if (!module1.home() || !module2.home() || !module3.home())
             connected = false;
         else
+        {
             connected = true;
+            botAngle = 0.0;
+        }
     }
 
     if (GETFLAG(packet.flags, Radio::FLAG_ENABLE))
@@ -131,7 +95,7 @@ void parsePacket()
 
     Radio::ResponsePacket response = {};
     //placeholders
-    response.angle = 0;
+    response.angle = botAngle * DEG_TO_RAD;
     response.flags = 0;
     Radio::sendStatus(response);
 
@@ -148,8 +112,8 @@ void parsePacket()
 
 void updateAngles()
 {
-    static unsigned long lastAngleCalc = micros();
-    if (micros() - lastAngleCalc > 1e6 * ANGLE_PID_SAMPLE_TIME)
+    static unsigned long lastCalc = micros();
+    if (micros() - lastCalc > 1e6 * ANGLE_PID_SAMPLE_TIME)
     { //this syntax still works through a timer overflow
         module1.updateAngle();
         module2.updateAngle();
@@ -157,14 +121,27 @@ void updateAngles()
 
         updateMotorOutputs();
 
-        lastAngleCalc = micros();
+        lastCalc = micros();
+    }
+}
+
+void updateGyro()
+{
+    static unsigned long lastCalc = micros();
+    if (micros() - lastCalc > 1e6 * GYRO_SAMPLE_TIME)
+    { //this syntax still works through a timer overflow
+        Vector norm = mpu.readNormalizeGyro();
+
+        botAngle = botAngle + norm.YAxis * GYRO_SAMPLE_TIME;
+
+        lastCalc = micros();
     }
 }
 
 void updateSpeeds()
 {
-    static unsigned long lastSpeedCalc = micros();
-    if (micros() - lastSpeedCalc > 1e6 * SPEED_PID_SAMPLE_TIME)
+    static unsigned long lastCalc = micros();
+    if (micros() - lastCalc > 1e6 * SPEED_PID_SAMPLE_TIME)
     { //this syntax still works through a timer overflow
         module1.updateSpeed();
         module2.updateSpeed();
@@ -172,7 +149,7 @@ void updateSpeeds()
 
         updateMotorOutputs();
 
-        lastSpeedCalc = micros();
+        lastCalc = micros();
     }
 }
 
@@ -202,4 +179,25 @@ void updateDisarmTimer()
         enabled = false;
         connected = false;
     }
+}
+
+void blinky()
+{
+    static unsigned long lastBlink = millis();
+    static boolean state = false;
+    if(!enabled)
+        digitalWrite(LED_BUILTIN, HIGH);
+    else
+    {
+        if(millis() - lastBlink > 250)
+        {
+            if(state)
+                digitalWrite(LED_BUILTIN, HIGH);
+            else
+                digitalWrite(LED_BUILTIN, LOW);
+            state = !state;
+            lastBlink = millis();
+        }
+    }
+    
 }

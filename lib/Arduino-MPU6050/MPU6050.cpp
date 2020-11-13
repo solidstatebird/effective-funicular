@@ -373,9 +373,9 @@ Vector MPU6050::readRawAccel(void)
 	uint8_t zla = Wire1.receive();
     #endif
 
-    ra.XAxis = xha << 8 | xla;
-    ra.YAxis = yha << 8 | yla;
-    ra.ZAxis = zha << 8 | zla;
+    ra.XAxis = (int16_t)(xha << 8 | xla);
+    ra.YAxis = (int16_t)(yha << 8 | yla);
+    ra.ZAxis = (int16_t)(zha << 8 | zla);
 
     return ra;
 }
@@ -421,7 +421,7 @@ Vector MPU6050::readRawGyro(void)
     #if ARDUINO >= 100
 	uint8_t xha = Wire1.read();
 	uint8_t xla = Wire1.read();
-        uint8_t yha = Wire1.read();
+    uint8_t yha = Wire1.read();
 	uint8_t yla = Wire1.read();
 	uint8_t zha = Wire1.read();
 	uint8_t zla = Wire1.read();
@@ -434,9 +434,9 @@ Vector MPU6050::readRawGyro(void)
 	uint8_t zla = Wire1.receive();
     #endif
 
-    rg.XAxis = xha << 8 | xla;
-    rg.YAxis = yha << 8 | yla;
-    rg.ZAxis = zha << 8 | zla;
+    rg.XAxis = (int16_t)(xha << 8 | xla);
+    rg.YAxis = (int16_t)(yha << 8 | yla);
+    rg.ZAxis = (int16_t)(zha << 8 | zla);
 
     return rg;
 }

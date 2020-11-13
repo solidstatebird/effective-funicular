@@ -109,6 +109,7 @@ private:
         targetWheelPosition, targetAngle,
         PIDspeed, PIDangle,
         targetSpeed = 0;
+        //angle is in radians
 };
 
 #endif
