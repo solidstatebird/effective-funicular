@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "WProgram.h"
 #endif
 
+#define I2C_AUTO_RETRY
 #include <i2c_t3.h>
 #include <math.h>
 
@@ -355,12 +356,17 @@ Vector MPU6050::readRawAccel(void)
     Wire1.beginTransmission(mpuAddress);
     Wire1.requestFrom(mpuAddress, 6);
 
-    while (Wire1.available() < 6);
-
+    unsigned long now = micros();
+    while (micros() - now < 1000)
+    {
+        if (Wire1.available() >= 6)
+            break;
+    }
+    
     #if ARDUINO >= 100
 	uint8_t xha = Wire1.read();
 	uint8_t xla = Wire1.read();
-        uint8_t yha = Wire1.read();
+    uint8_t yha = Wire1.read();
 	uint8_t yla = Wire1.read();
 	uint8_t zha = Wire1.read();
 	uint8_t zla = Wire1.read();
@@ -416,7 +422,12 @@ Vector MPU6050::readRawGyro(void)
     Wire1.beginTransmission(mpuAddress);
     Wire1.requestFrom(mpuAddress, 6);
 
-    while (Wire1.available() < 6);
+    unsigned long now = micros();
+    while (micros() - now < 1000)
+    {
+        if (Wire1.available() >= 6)
+            break;
+    }
 
     #if ARDUINO >= 100
 	uint8_t xha = Wire1.read();
@@ -653,7 +664,14 @@ uint8_t MPU6050::readRegister8(uint8_t reg)
 
     Wire1.beginTransmission(mpuAddress);
     Wire1.requestFrom(mpuAddress, 1);
-    while(!Wire1.available()) {};
+
+    unsigned long now = micros();
+    while (micros() - now < 1000)
+    {
+        if (Wire1.available())
+            break;
+    }
+    
     #if ARDUINO >= 100
 	value = Wire1.read();
     #else
@@ -692,7 +710,14 @@ int16_t MPU6050::readRegister16(uint8_t reg)
 
     Wire1.beginTransmission(mpuAddress);
     Wire1.requestFrom(mpuAddress, 2);
-    while(!Wire1.available()) {};
+
+    unsigned long now = micros();
+    while (micros() - now < 1000)
+    {
+        if (Wire1.available())
+            break;
+    }
+
     #if ARDUINO >= 100
         uint8_t vha = Wire1.read();
         uint8_t vla = Wire1.read();
