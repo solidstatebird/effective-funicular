@@ -26,7 +26,6 @@ Module::~Module() {}
 
 void Module::updateAngle()
 {
-    if(!armed) return;
     measuredAngle = (PI * (m1Encoder.read() + m2Encoder.read())) / (ENCODER_TICKS_PER_REVOLUTION * STEERING_RATIO);
     //the 2 from the radian conversion and the averaging calculation cancel out
     angleControl.Compute();
@@ -34,13 +33,12 @@ void Module::updateAngle()
 
 void Module::updateSpeed()
 {
-    if(!armed) return;
     int32_t ticks1 = m1Encoder.read();
     int32_t ticks2 = m2Encoder.read();
 
     measuredWheelPosition = ticks1 - ticks2;
     
-    targetWheelPosition += targetSpeed * SPEED_PID_SAMPLE_TIME ;
+    targetWheelPosition += targetSpeed * SPEED_PID_SAMPLE_TIME;
 
     speedControl.Compute();
 }
@@ -48,8 +46,10 @@ void Module::updateSpeed()
 boolean Module::home()
 {
     disarm();
-    targetSpeed = 0;
-    targetAngle = 0;
+    setSpeed(0);
+    setAngle(0);
+    measuredWheelPosition = 0;
+    measuredAngle = 0;
 
     unsigned long startTime = millis();
 
@@ -109,7 +109,7 @@ void Module::disarm()
 {
     angleControl.SetMode(MANUAL);
     speedControl.SetMode(MANUAL);
-    targetSpeed = 0;
+    setSpeed(0);
     PIDangle = 0;
     PIDspeed = 0;
     moduleController.zero();
@@ -118,7 +118,6 @@ void Module::disarm()
 
 void Module::arm()
 {
-
     angleControl.SetMode(AUTOMATIC);
     speedControl.SetMode(AUTOMATIC);
     armed = true;
