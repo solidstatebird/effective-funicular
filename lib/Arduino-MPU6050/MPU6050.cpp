@@ -35,7 +35,8 @@ bool MPU6050::begin(mpu6050_dps_t scale, mpu6050_range_t range, int mpua)
     // Set Address
     mpuAddress = mpua;
 
-    Wire1.begin(I2C_MASTER, 0x00, I2C_PINS_37_38, I2C_PULLUP_EXT, 400000);
+    Wire1.begin(I2C_MASTER, 0x00, I2C_PINS_37_38, I2C_PULLUP_EXT, 100000);
+    Wire1.setDefaultTimeout (1000);
 
     // Reset calibrate values
     dg.XAxis = 0;
@@ -546,7 +547,7 @@ void MPU6050::setAccelOffsetZ(int16_t offset)
 }
 
 // Calibrate algorithm
-void MPU6050::calibrateGyro(uint8_t samples)
+void MPU6050::calibrateGyro(uint16_t samples)
 {
     // Set calibrate
     useCalibrate = true;
@@ -560,18 +561,18 @@ void MPU6050::calibrateGyro(uint8_t samples)
     float sigmaZ = 0;
 
     // Read n-samples
-    for (uint8_t i = 0; i < samples; ++i)
+    for (uint16_t i = 0; i < samples; ++i)
     {
-	readRawGyro();
-	sumX += rg.XAxis;
-	sumY += rg.YAxis;
-	sumZ += rg.ZAxis;
+        readRawGyro();
+        sumX += rg.XAxis;
+        sumY += rg.YAxis;
+        sumZ += rg.ZAxis;
 
-	sigmaX += rg.XAxis * rg.XAxis;
-	sigmaY += rg.YAxis * rg.YAxis;
-	sigmaZ += rg.ZAxis * rg.ZAxis;
+        sigmaX += rg.XAxis * rg.XAxis;
+        sigmaY += rg.YAxis * rg.YAxis;
+        sigmaZ += rg.ZAxis * rg.ZAxis;
 
-	delay(5);
+        delay(5);
     }
 
     // Calculate delta vectors
@@ -580,14 +581,14 @@ void MPU6050::calibrateGyro(uint8_t samples)
     dg.ZAxis = sumZ / samples;
 
     // Calculate threshold vectors
-    th.XAxis = sqrt((sigmaX / 50) - (dg.XAxis * dg.XAxis));
-    th.YAxis = sqrt((sigmaY / 50) - (dg.YAxis * dg.YAxis));
-    th.ZAxis = sqrt((sigmaZ / 50) - (dg.ZAxis * dg.ZAxis));
+    th.XAxis = sqrt((sigmaX / samples) - (dg.XAxis * dg.XAxis));
+    th.YAxis = sqrt((sigmaY / samples) - (dg.YAxis * dg.YAxis));
+    th.ZAxis = sqrt((sigmaZ / samples) - (dg.ZAxis * dg.ZAxis));
 
     // If already set threshold, recalculate threshold vectors
     if (actualThreshold > 0)
     {
-	setThreshold(actualThreshold);
+	    setThreshold(actualThreshold);
     }
 }
 
