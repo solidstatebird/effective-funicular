@@ -37,7 +37,14 @@ void setup()
     mpu.begin(MPU6050_SCALE_500DPS, MPU6050_RANGE_2G);
     delay(500);
     mpu.calibrateGyro();
-    mpu.setThreshold(0);
+    mpu.setThreshold(1);
+
+    // Serial.begin(115200);
+    // while(1) {
+    //     updateGyro();
+    //     delay(20);
+    //     Serial.println(botAngle);
+    // }
 
     Radio::initialize();
 }
