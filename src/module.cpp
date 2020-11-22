@@ -49,6 +49,7 @@ boolean Module::home()
     setSpeed(0);
     setAngle(0);
     measuredWheelPosition = 0;
+    targetWheelPosition = 0;
     measuredAngle = 0;
 
     unsigned long startTime = millis();
