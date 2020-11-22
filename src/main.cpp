@@ -1,12 +1,13 @@
 #include <Arduino.h>
 #include <MPU6050.h>
+#include <i2c_t3.h>
 
 #include "radio.h"
 #include "module.h"
 
 //#include "util.h"
 
-const float GYRO_SAMPLE_TIME = 0.01;
+const float GYRO_SAMPLE_TIME = 0.025;
 const unsigned long SAFETY_TIMEOUT_MS = 1000;
 
 Module module1(ID_MODULE1),
@@ -39,7 +40,7 @@ void setup()
     mpu.calibrateGyro();
     mpu.setThreshold(1);
 
-    // Serial.begin(115200);
+    //Serial.begin(2000000);
     // while(1) {
     //     updateGyro();
     //     delay(20);
@@ -139,7 +140,7 @@ void updateGyro()
     { //this syntax still works through a timer overflow
         Vector norm = mpu.readNormalizeGyro();
 
-        botAngle = botAngle + norm.YAxis * GYRO_SAMPLE_TIME;
+        botAngle += norm.YAxis * GYRO_SAMPLE_TIME;
 
         lastCalc = micros();
     }
@@ -206,5 +207,4 @@ void blinky()
             lastBlink = millis();
         }
     }
-    
 }

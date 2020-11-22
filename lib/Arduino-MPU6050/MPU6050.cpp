@@ -30,13 +30,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <MPU6050.h>
 
+void errorHandler()
+{
+    //Serial.println(Wire1.getError());
+    // Serial.print("RESET BUS  "); Serial.println(Wire1.getErrorCount(I2C_ERRCNT_RESET_BUS));
+    // Serial.print("TIMEOUT  "); Serial.println(Wire1.getErrorCount(I2C_ERRCNT_TIMEOUT));
+    // Serial.print("ADDR NACK  "); Serial.println(Wire1.getErrorCount(I2C_ERRCNT_ADDR_NAK));
+    // Serial.print("ARBL  "); Serial.println(Wire1.getErrorCount(I2C_ERRCNT_ARBL));
+    // Serial.print("NOT ACQ  "); Serial.println(Wire1.getErrorCount(I2C_ERRCNT_NOT_ACQ));
+    Wire1.resetBus();
+}
+
 bool MPU6050::begin(mpu6050_dps_t scale, mpu6050_range_t range, int mpua)
 {
     // Set Address
     mpuAddress = mpua;
 
     Wire1.begin(I2C_MASTER, 0x00, I2C_PINS_37_38, I2C_PULLUP_EXT, 100000);
-    Wire1.setDefaultTimeout (1000);
+    Wire1.setDefaultTimeout(1000);
+
+    Wire1.onError(&errorHandler);
 
     // Reset calibrate values
     dg.XAxis = 0;
