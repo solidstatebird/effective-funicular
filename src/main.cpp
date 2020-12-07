@@ -38,7 +38,7 @@ void setup()
     mpu.begin(MPU6050_SCALE_500DPS, MPU6050_RANGE_2G);
     delay(500);
     mpu.calibrateGyro();
-    mpu.setThreshold(1);
+    mpu.setThreshold(0);
 
     //Serial.begin(2000000);
     // while(1) {
