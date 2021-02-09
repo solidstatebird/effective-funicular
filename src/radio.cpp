@@ -31,7 +31,6 @@ void Radio::sendStatus(ResponsePacket outgoing)
     uint8_t data[RESPONSE_PACKET_SIZE];
     data[RESPONSE_PACKET_FLAGS_OFFSET] = outgoing.flags >> 8;
     data[RESPONSE_PACKET_FLAGS_OFFSET + 1] = outgoing.flags;
-    writeFloat(outgoing.angle, data, RESPONSE_PACKET_ANGLE_OFFSET);
     uint8_t packetcrc = crc8.smbus(data, RESPONSE_PACKET_SIZE - 1);
     data[RESPONSE_PACKET_CRC_OFFSET] = packetcrc;
 
@@ -69,12 +68,9 @@ void packetHandler(const void *sender, const uint8_t *data, size_t size)
         return;
 
     currentPacket.flags = (data[PACKET_FLAGS_OFFSET] << 8) + data[PACKET_FLAGS_OFFSET+1];
-    currentPacket.a1 = readFloat(data, PACKET_A1_OFFSET);
-    currentPacket.a2 = readFloat(data, PACKET_A2_OFFSET);
-    currentPacket.a3 = readFloat(data, PACKET_A3_OFFSET);
-    currentPacket.s1 = readFloat(data, PACKET_S1_OFFSET);
-    currentPacket.s2 = readFloat(data, PACKET_S2_OFFSET);
-    currentPacket.s3 = readFloat(data, PACKET_S3_OFFSET);
+    currentPacket.tx = readFloat(data, PACKET_TX_OFFSET);
+    currentPacket.ty = readFloat(data, PACKET_TY_OFFSET);
+    currentPacket.w = readFloat(data, PACKET_W_OFFSET);
     currentPacket.crc = calc_crc;
 
     newData = true;

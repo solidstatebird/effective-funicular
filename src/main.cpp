@@ -30,6 +30,7 @@ void updateDisarmTimer();
 void parsePacket();
 void updateMotorOutputs();
 
+
 void setup()
 {
     pinMode(LED_BUILTIN, OUTPUT);
@@ -103,18 +104,17 @@ void parsePacket()
 
     Radio::ResponsePacket response = {};
     //placeholders
-    response.angle = botAngle * DEG_TO_RAD;
     response.flags = 0;
     Radio::sendStatus(response);
 
     if (enabled)
     {
-        module1.setSpeed(packet.s1);
-        module2.setSpeed(packet.s2);
-        module3.setSpeed(packet.s3);
-        module1.setAngle(packet.a1);
-        module2.setAngle(packet.a2);
-        module3.setAngle(packet.a3);
+        module1.setSpeed(packet.tx);
+        module2.setSpeed(packet.tx);
+        module3.setSpeed(packet.tx);
+        module1.setAngle(packet.ty);
+        module2.setAngle(packet.ty);
+        module3.setAngle(packet.ty);
     }
 }
 
