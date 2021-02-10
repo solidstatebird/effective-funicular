@@ -82,6 +82,8 @@ public:
     ~Module();
     ModuleID id;
 
+    float measuredAngle;
+
     MotorController moduleController;
     Encoder m1Encoder, m2Encoder;
     FastFloatPID speedControl, angleControl;
@@ -90,6 +92,7 @@ public:
     void arm();
 
     boolean home();
+
 
     void updateAngle();
     void updateSpeed();
@@ -105,7 +108,7 @@ private:
 
     const uint8_t hallPin;
 
-    float measuredWheelPosition, measuredAngle,
+    float measuredWheelPosition,
         targetWheelPosition, targetAngle,
         PIDspeed, PIDangle,
         targetSpeed = 0;

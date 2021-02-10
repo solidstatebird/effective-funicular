@@ -18,7 +18,7 @@ namespace Radio
         uint8_t bytes[4];
     } FloatUnion;
 
-    const uint8_t PACKET_SIZE = 14;
+    const uint8_t PACKET_SIZE = 16;
 
     const uint8_t PACKET_FLAGS_OFFSET = 0;
     const uint8_t PACKET_TX_OFFSET = 2;
@@ -34,6 +34,7 @@ namespace Radio
     } Packet;
 
     const uint8_t FLAG_ENABLE = 0;
+    const uint8_t FLAG_SPEED = 1;
 
     const uint8_t RESPONSE_PACKET_SIZE = 3;
 
