@@ -35,19 +35,24 @@ namespace Radio
 
     const uint8_t FLAG_ENABLE = 0;
     const uint8_t FLAG_SPEED = 1;
+    const uint8_t FLAG_MODE = 2;
 
-    const uint8_t RESPONSE_PACKET_SIZE = 3;
+    const uint8_t RESPONSE_PACKET_SIZE = 7;
 
     const uint8_t RESPONSE_PACKET_FLAGS_OFFSET = 0;
-    const uint8_t RESPONSE_PACKET_CRC_OFFSET = 2;
+    const uint8_t RESPONSE_PACKET_FLOAT_OFFSET = 2;
+    const uint8_t RESPONSE_PACKET_CRC_OFFSET = 6;
 
     const uint8_t RESPONSE_FLAG_BUSY = 0;
 
     typedef struct
     {
         uint16_t flags;
+        float floatTest;
         uint8_t crc;
     } ResponsePacket;
+
+    
 } // namespace RADIO
 
 #endif

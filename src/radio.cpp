@@ -31,6 +31,7 @@ void Radio::sendStatus(ResponsePacket outgoing)
     uint8_t data[RESPONSE_PACKET_SIZE];
     data[RESPONSE_PACKET_FLAGS_OFFSET] = outgoing.flags >> 8;
     data[RESPONSE_PACKET_FLAGS_OFFSET + 1] = outgoing.flags;
+    writeFloat(outgoing.floatTest, data, RESPONSE_PACKET_FLOAT_OFFSET);
     uint8_t packetcrc = crc8.smbus(data, RESPONSE_PACKET_SIZE - 1);
     data[RESPONSE_PACKET_CRC_OFFSET] = packetcrc;
 

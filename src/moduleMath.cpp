@@ -2,6 +2,10 @@
 #include "module.h"
 #include "moduleMath.h"
 
+CartesianCoordinates PolarCoordinates::toCartesian() {
+    CartesianCoordinates returnCoord(magnitude * cos(angle), magnitude * sin(angle));
+    return returnCoord;
+}
 
 float ConstrainedAngle(float angle)
 {
@@ -18,28 +22,28 @@ float ConstrainedAngle(float angle)
     return tempAngle;
 }
 
-CartesianCoordinates rotateVector(Radio::Packet p, float angle){
+CartesianCoordinates rotateVector(CartesianCoordinates old, float angle){
     CartesianCoordinates t;
-    t.x = p.tx * cosf(angle) - p.ty * sinf(angle);
-    t.y = p.tx * sinf(angle) + p.ty * cosf(angle);
+    t.x = old.x * cosf(-angle) - old.y * sinf(-angle);
+    t.y = old.x * sinf(-angle) + old.y * cosf(-angle);
     return t;
 }
-PolarCoordinates toWheelVelocity(Radio::Packet p, Module m, CartesianCoordinates t){
+PolarCoordinates toWheelVelocity(float wp, Module m, CartesianCoordinates t){
     CartesianCoordinates w;
     CartesianCoordinates temp;
     PolarCoordinates v;
 
     if (m.id == 0){
-        w.x = p.w;
+        w.x = wp;
         w.y = 0.0f;
     }
     else if (m.id == 1){
-        w.x = -0.5*p.w;
-        w.y = -0.866*p.w;
+        w.x = -0.5*wp;
+        w.y = -0.866*wp;
     }
     else{
-        w.x = -0.5*p.w;
-        w.y = 0.866*p.w;
+        w.x = -0.5*wp;
+        w.y = 0.866*wp;
     }
 
     temp.x = t.x + w.x;
@@ -47,6 +51,16 @@ PolarCoordinates toWheelVelocity(Radio::Packet p, Module m, CartesianCoordinates
 
     v = temp.toPolar();
     return v;
+}
+
+float angleDiff(float a,float b){
+    float dif = fmodf(b - a + F_PI,2*F_PI);
+    if (dif < 0)
+        dif += 2 * F_PI;
+    return dif - F_PI;
+}
+float unwrap(float previousAngle,float newAngle){
+    return previousAngle - angleDiff(newAngle,ConstrainedAngle(previousAngle));
 }
 
 void normalizingSpeeds(float& s1, float& s2 , float& s3)
@@ -62,17 +76,26 @@ void normalizingSpeeds(float& s1, float& s2 , float& s3)
     s2 /= n;
     s3 /= n;
 }
-PolarCoordinates angleOptimization(float preA, float currentA, PolarCoordinates v, int& turns){
-    if ((preA-turns*2*F_PI) - F_PI > v.angle)
-        turns++;
-    else if ((preA-turns*2*F_PI) + F_PI < v.angle)
-        turns--;
-    v.angle += 2 * F_PI * turns;
-    if (abs(v.magnitude) < 0.01)
-        v.angle = preA;
+PolarCoordinates angleOptimization(float currentA, PolarCoordinates v){
     
-    float cosError = cosf(abs(v.angle - preA));    
-    v.magnitude *= cosError;
+    if (abs(v.magnitude) < 0.05){
+        v.angle = currentA;
+        return v;
+    }
+
+
+    float angleDifference = abs(v.angle - currentA);
+
+    float cosError = cosf(angleDifference);    
+
+    v.magnitude *= powf(cosError, 5);
+
+    if (cosError < 0){
+        v.angle = ConstrainedAngle(v.angle + F_PI);    
+    }
+
+    
+    v.angle = unwrap(currentA, v.angle);
 
     return v;
 }

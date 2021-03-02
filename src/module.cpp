@@ -58,7 +58,7 @@ boolean Module::home()
     {
         moduleController.setOutput(80, 80);
 
-        if (analogRead(hallPin) > MAGNET_THRESHOLDS[id])
+        if (analogRead(hallPin) > (MAGNET_THRESHOLDS[id] - 20))
         {
             moduleController.setOutput(0, 0);
             m1Encoder.write(0);
@@ -133,6 +133,21 @@ void Module::setSpeed(float setpoint)
 {
     targetSpeed = setpoint * ((ENCODER_TICKS_PER_REVOLUTION * WHEEL_RATIO) / WHEEL_CIRCUMFERENCE_IN); //in/sec to ticks/sec
     targetSpeed *= MODULE_DIRECTIONS[id];
+}
+
+void Module::moduleOffset(){
+    if (analogRead(hallPin) > MAGNET_THRESHOLDS[id] - 20)
+    {
+        int32_t temp;
+        float angleCorrect = fmodf(measuredAngle + M_PI, 2*M_PI);
+        if (angleCorrect < 0)
+            angleCorrect += 2*M_PI;
+        angleCorrect -= M_PI;
+        temp = (int32_t)((angleCorrect * STEERING_RATIO) / (2*M_PI));
+        m1Encoder.write(m1Encoder.read()-temp);
+        m2Encoder.write(m2Encoder.read()-temp);
+    }
+
 }
 
 MotorController::MotorController(ModuleID id_)

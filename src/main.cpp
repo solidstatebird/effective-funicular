@@ -20,16 +20,24 @@ boolean connected = false;
 
 unsigned long disableTimer = 0;
 
-float botAngle = 0.0; //degrees
+float botAngle = 0.0; //radians
 float maxSpeed = 40.0f;
 
+unsigned long measuredTime;
 
+Radio::Packet packet;
 
 PolarCoordinates v1, v2, v3;
-float preA1 = 0.0f, preA2 = 0.0f, preA3 = 0.0f;
-int turns1, turns2, turns3;
+float modOffset1 = 0.0f, modOffset2 = 0.0f, modOffset3 = 0.0f;
+
+float testPrint = 1.0f;
 
 CartesianCoordinates t;
+
+CartesianCoordinates currentPosition;
+
+
+bool skipPacket = false;
 
 void updateAngles();
 void updateGyro();
@@ -37,6 +45,8 @@ void updateSpeeds();
 void blinky();
 void updateDisarmTimer();
 void parsePacket();
+void gamepadMode(Radio::Packet);
+void positionMode(Radio::Packet);
 void updateMotorOutputs();
 
 
@@ -50,6 +60,20 @@ void setup()
     mpu.calibrateGyro();
     mpu.setThreshold(0);
 
+    // int preHall = 0.0f;
+    // int big = 0.0f;
+    // Serial.begin(2000000);
+    // while(1) {
+    //      int i = analogRead(module3.hallPin);
+    //      if (i > preHall)
+    //         big = i;
+
+    //     Serial.println(big);
+    //     delay(20);
+    //     preHall = big;
+
+    // }
+
     // Serial.begin(2000000);
     // while(1) {
     //     updateGyro();
@@ -62,14 +86,12 @@ void setup()
 
 void loop()
 {
-    
     Radio::update();
     if (Radio::packetAvailable())
     {
         parsePacket();
         disableTimer = millis();
     }
-    
 
     updateGyro();
     blinky();
@@ -80,19 +102,18 @@ void loop()
 
 void parsePacket()
 {
-    Radio::Packet packet = Radio::getLastPacket();
+    //if (!skipPacket){
+    packet = Radio::getLastPacket();
+    //}
+    if (!GETFLAG(packet.flags, Radio::FLAG_MODE)){ // Gamepad Mode is 0, Position Mode is 1
+        gamepadMode(packet);
+    }
 
-    t = rotateVector(packet, botAngle);
+    else {
+        positionMode(packet);
+    }
 
-    v1 = toWheelVelocity(packet, module1, t);
-    v2 = toWheelVelocity(packet, module2, t);
-    v3 = toWheelVelocity(packet, module3, t);
 
-    normalizingSpeeds(v1.magnitude, v2.magnitude, v3.magnitude);
-
-    v1 = angleOptimization(preA1, module1.measuredAngle, v1, turns1);
-    v2 = angleOptimization(preA2, module2.measuredAngle, v2, turns2);
-    v3 = angleOptimization(preA3, module3.measuredAngle, v3, turns3);
 
     if(!connected)
     {
@@ -136,20 +157,87 @@ void parsePacket()
     Radio::ResponsePacket response = {};
     //placeholders
     response.flags = 0;
+    response.floatTest = currentPosition.x;
     Radio::sendStatus(response);
 
     if (enabled)
     {
-        module1.setSpeed(maxSpeed * v1.magnitude);
-        module2.setSpeed(maxSpeed * v2.magnitude);
-        module3.setSpeed(maxSpeed * v3.magnitude);
+        module1.setSpeed(maxSpeed*v1.magnitude);
+        module2.setSpeed(maxSpeed*v2.magnitude);
+        module3.setSpeed(maxSpeed*v3.magnitude);
         module1.setAngle(v1.angle);
         module2.setAngle(v2.angle);
         module3.setAngle(v3.angle);
     }
-    preA1 = v1.angle;
-    preA2 = v2.angle;
-    preA3 = v3.angle;
+}
+
+void gamepadMode(Radio::Packet packet){
+    t.x = packet.tx;
+    t.y = packet.ty;
+    t = rotateVector(t, botAngle * DEG_TO_RAD);
+
+    packet.w *= 30/maxSpeed;
+
+    v1 = toWheelVelocity(packet.w, module1, t);
+    v2 = toWheelVelocity(packet.w, module2, t);
+    v3 = toWheelVelocity(packet.w, module3, t);
+
+    //normalizingSpeeds(v1.magnitude, v2.magnitude, v3.magnitude);
+
+    v1 = angleOptimization(module1.measuredAngle, v1);
+    v2 = angleOptimization(module2.measuredAngle - 120*DEG_TO_RAD, v2);
+    v3 = angleOptimization(module3.measuredAngle + 120*DEG_TO_RAD, v3);
+
+    // module1.moduleOffset();
+    // module2.moduleOffset();
+    // module3.moduleOffset();
+
+}
+void positionMode(Radio::Packet packet){
+
+    float x = packet.tx - currentPosition.x;
+    float y = packet.ty - currentPosition.y;
+    float d = sqrtf(x*x +y*y);
+
+    
+
+
+    if (d < 1){
+        t.x = 0.0f; //if you reach distance with tolerance, set speed to zero
+        t.y = 0.0f;
+    }
+    else{
+        t.x = x/d; //unit vectors for direction
+        t.y = y/d;
+    }
+    float w = 0.0f; // change later pwitty pwease (don't forget stupido (if you miss this you big dummy))
+    
+    t = rotateVector(t, botAngle*DEG_TO_RAD);
+    
+    v1 = toWheelVelocity(w, module1, t);
+    v2 = toWheelVelocity(w, module2, t);
+    v3 = toWheelVelocity(w, module3, t);
+    //normalizingSpeeds(v1.magnitude, v2.magnitude, v3.magnitude);
+
+    v1 = angleOptimization(module1.measuredAngle, v1);
+    v2 = angleOptimization(module2.measuredAngle - 120*DEG_TO_RAD, v2);
+    v3 = angleOptimization(module3.measuredAngle + 120*DEG_TO_RAD, v3);
+
+    static unsigned long lastCalc = millis();
+    
+    unsigned long timeIncrement = millis() - lastCalc;
+    lastCalc = millis();
+    if(timeIncrement > 1000){
+        timeIncrement = 0;
+    }
+
+    testPrint = (float)timeIncrement;
+
+    currentPosition.x += maxSpeed * t.x * (float)timeIncrement * 0.001;
+    currentPosition.y += maxSpeed * t.y * (float)timeIncrement * 0.001;
+
+    
+    
 }
 
 void updateAngles()
@@ -160,7 +248,7 @@ void updateAngles()
         module1.updateAngle();
         module2.updateAngle();
         module3.updateAngle();
-
+        
         updateMotorOutputs();
 
         lastCalc = micros();
@@ -174,8 +262,8 @@ void updateGyro()
     { //this syntax still works through a timer overflow
         Vector norm = mpu.readNormalizeGyro();
 
-        botAngle += norm.YAxis * GYRO_SAMPLE_TIME;
-        botAngle *= DEG_TO_RAD;
+        botAngle += (norm.YAxis) * GYRO_SAMPLE_TIME;
+        
 
         lastCalc = micros();
     }

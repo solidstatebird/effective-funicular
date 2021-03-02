@@ -45,7 +45,8 @@ public:
 };
 
 float ConstrainedAngle(float angle);
-CartesianCoordinates rotateVector(Radio::Packet p, float botAngle);
-PolarCoordinates toWheelVelocity(Radio::Packet, Module, CartesianCoordinates);
+CartesianCoordinates rotateVector(CartesianCoordinates, float);
+PolarCoordinates toWheelVelocity(float, Module, CartesianCoordinates);
 void normalizingSpeeds(float& s1, float& s2 , float& s3);
-PolarCoordinates angleOptimization(float, float, PolarCoordinates, int&);
+PolarCoordinates angleOptimization(float, PolarCoordinates);
+float roundToNearest(float n, float nearest);

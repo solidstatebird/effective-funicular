@@ -24,7 +24,7 @@ const float WHEEL_CIRCUMFERENCE_IN = PI * 2.5;
 const float SPEED_KP = 20.0,
             SPEED_KI = 0.0,
             SPEED_KD = 0.0,
-            ANGLE_KP = 220.0,
+            ANGLE_KP = 220,
             ANGLE_KI = 0.0,
             ANGLE_KD = 0.0;
 
@@ -34,7 +34,7 @@ const float MODULE_OFFSETS[] = {0.0 * DEG_TO_RAD, 120.0 * DEG_TO_RAD, -120.0 * D
 const int_fast8_t MODULE_DIRECTIONS[] = {1, 1, -1};
 
 const uint8_t HALLPINS[] = {A20, A21, A22};
-const int MAGNET_THRESHOLDS[] = {410, 385, 410};
+const int MAGNET_THRESHOLDS[] = {422, 404, 450};
 
 //////////////////////////////// PINS ////////////////////////////////
 
@@ -83,6 +83,7 @@ public:
     ModuleID id;
 
     float measuredAngle;
+    float angleCorrection;
 
     MotorController moduleController;
     Encoder m1Encoder, m2Encoder;
@@ -103,10 +104,12 @@ public:
     int getMaxOutput();
     void updateMotorController(int);
 
-private:
-    boolean armed = false;
+    void moduleOffset();
 
     const uint8_t hallPin;
+
+private:
+    boolean armed = false;
 
     float measuredWheelPosition,
         targetWheelPosition, targetAngle,
